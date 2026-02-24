@@ -1,0 +1,22 @@
+# Entornos virtuales
+.venv/
+venv/
+
+# Variables de entorno
+.env
+
+# Caché Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Archivos temporales
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
