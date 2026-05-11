@@ -116,7 +116,9 @@ def login(
 # 🔄 REFRESH TOKEN
 # =========================================================
 @router.get("/refresh")
-def refresh_token(request: Request):
+def refresh_token(
+    request: Request,
+    db: Session = Depends(get_db)):
     """
     Genera un nuevo access token a partir del refresh token.
     """
@@ -134,7 +136,7 @@ def refresh_token(request: Request):
         payload = validate_refresh_token(refresh_token)
 
         # 🔁 generar nuevo access
-        new_access_token = refresh_access_token(payload, request)
+        new_access_token = refresh_access_token(payload, db)
 
         response = RedirectResponse("/dashboard")
 

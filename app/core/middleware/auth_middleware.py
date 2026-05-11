@@ -1,6 +1,7 @@
 # core/middleware/auth_middleware.py
 # 🔐 Middleware de autenticación y refresh automático
 
+from fastapi import HTTPException
 from fastapi.responses import RedirectResponse
 from jose import JWTError
 from starlette.middleware.base import BaseHTTPMiddleware
@@ -17,6 +18,12 @@ PUBLIC_PATHS = [
     "/static",
     "/auth/saml"
 ]
+
+def redirect_to_login():
+    response = RedirectResponse("/login", status_code=302)
+    response.delete_cookie("access_token", path="/")
+    response.delete_cookie("refresh_token", path="/")
+    return response
 
 
 
@@ -50,13 +57,13 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
             return await call_next(request)
 
-        except JWTError as e:
+        except (JWTError,HTTPException) as e:
             print(f"Error al validar el token: {e}")
             # 🔴 4. Intentar refresh automático
             refresh_token = request.cookies.get("refresh_token")
 
             if not refresh_token:
-                return RedirectResponse("/login", status_code=302)
+                return redirect_to_login()
 
             try:
                 # 🔥 validar refresh token
@@ -84,6 +91,6 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
                 return response
 
-            except JWTError as e:
+            except (JWTError,HTTPException) as e:
                 print(f"Error al refrescar el token: {e}")
-                return RedirectResponse("/login", status_code=302)
+                return redirect_to_login()

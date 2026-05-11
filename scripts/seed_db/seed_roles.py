@@ -51,7 +51,8 @@ def seed_roles(db):
 
         "dashboard:read",
         "students:read",
-        "audit:read"
+        "audit:read",
+        "activity_feed:read"
     ]
 
     perms = {}
@@ -81,6 +82,8 @@ def seed_roles(db):
         perms["activities:read"],
         perms["activities:create"],
 
+        perms["activity_feed:read"]
+
     ]
 
     estudiante.permissions = [
@@ -90,7 +93,9 @@ def seed_roles(db):
         perms["tasks:read"],
         perms["activities:read"],
         perms["activities:create"],
-        perms["activities:update"]
+        perms["activities:update"],
+        perms["activity_feed:read"]
+
     ]
 
     uah_user.permissions = [
@@ -100,7 +105,9 @@ def seed_roles(db):
         perms["tasks:read"],
         perms["activities:read"],
         perms["activities:create"],
-        perms["activities:update"]
+        perms["activities:update"],
+        perms["activity_feed:read"]
+
     ]
 
     db.commit()

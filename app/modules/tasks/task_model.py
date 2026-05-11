@@ -7,12 +7,23 @@
 # y visualización de los objetos de tarea.
 
 
-from sqlalchemy import Column, Integer, String, Text, Date, DateTime, ForeignKey
+import enum
+
+from sqlalchemy import Column, Enum, Integer, String, Text, Date, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from datetime import datetime, UTC
 
 from app.db.base import Base
 
+class TaskStatusEnum(str, enum.Enum):
+    todo = "todo"
+    doing = "doing"
+    done = "done"
+
+class TaskPriorityEnum(str, enum.Enum):
+    low = "low"
+    medium = "medium"
+    high = "high"
 
 class Task(Base):
     __tablename__ = "tasks"
@@ -28,13 +39,28 @@ class Task(Base):
     name = Column(String(150), nullable=False)
     description = Column(Text, nullable=True)
 
-    status = Column(String(50), default="Pendiente", nullable=False)
-    priority = Column(String(20), default="Media", nullable=False)
+    status = Column(
+        Enum(TaskStatusEnum),
+        default=TaskStatusEnum.todo,
+        nullable=False
+    )
 
-    assigned_user_id = Column(
+    priority = Column(
+        Enum(TaskPriorityEnum),
+        default=TaskPriorityEnum.medium,
+        nullable=False
+    )
+
+    assigned_to = Column(
         Integer,
         ForeignKey("usuarios.id_usuario"),
         nullable=True
+    )
+
+    created_by = Column(
+        Integer,
+        ForeignKey("usuarios.id_usuario"),
+        nullable=False
     )
 
     due_date = Column(Date, nullable=True)
@@ -48,7 +74,7 @@ class Task(Base):
     # Relaciones
     project = relationship("Project", back_populates="tasks")
 
-    assigned_user = relationship("User")
+    assignee = relationship("User",foreign_keys=[assigned_to])
 
     activities = relationship(
         "Activity",

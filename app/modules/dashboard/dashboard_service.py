@@ -5,11 +5,12 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.modules.activities.activity_model import Activity
+from app.modules.activity_feed.activity_feed_model import ProjectActivityFeed
 from app.modules.audit.audit_model import AuditLog
 from app.modules.identities.identity_model import Identity
 from app.modules.projects.project_model import Project
 from app.modules.roles.role_model import Role
-from app.modules.tasks.task_model import Task
+from app.modules.tasks.task_model import Task, TaskStatusEnum
 from app.modules.users.user_model import User
 
 
@@ -58,10 +59,18 @@ def get_dashboard_metrics(db: Session) -> dict:
     # =====================================================
     task_stats = db.query(
         func.count(Task.id_task).label("total"),
-        func.sum(Task.status == "Pendiente").label("pending"),
-        func.sum(Task.status == "En progreso").label("progress"),
-        func.sum(Task.status == "Completada").label("completed")
+        func.sum(Task.status == TaskStatusEnum.todo).label("pending"),
+        func.sum(Task.status == TaskStatusEnum.doing).label("progress"),
+        func.sum(Task.status == TaskStatusEnum.done).label("completed")
     ).one()
+
+    completion_rate = 0
+
+    if task_stats.total:
+        completion_rate = round(
+            (task_stats.completed / task_stats.total) * 100,
+            1
+        )
 
     # =====================================================
     # ⚙ ACTIVITIES
@@ -75,6 +84,17 @@ def get_dashboard_metrics(db: Session) -> dict:
         db.query(Activity)
         .order_by(Activity.created_at.desc())
         .limit(5)
+        .all()
+    )
+
+    # =====================================================
+    # 📡 PROJECT FEED
+    # =====================================================
+
+    recent_feed = (
+        db.query(ProjectActivityFeed)
+        .order_by(ProjectActivityFeed.created_at.desc())
+        .limit(8)
         .all()
     )
 
@@ -116,6 +136,7 @@ def get_dashboard_metrics(db: Session) -> dict:
         "pending_tasks": int(task_stats.pending or 0),
         "progress_tasks": int(task_stats.progress or 0),
         "completed_tasks": int(task_stats.completed or 0),
+        "completion_rate": completion_rate,
 
         # ACTIVITIES
         "total_activities": activity_stats.total or 0,
@@ -124,4 +145,7 @@ def get_dashboard_metrics(db: Session) -> dict:
         # FEEDS
         "recent_activities": recent_activities,
         "recent_logs": recent_logs,
+
+        # RECENT FEEDS
+        "recent_feed": recent_feed,
     }

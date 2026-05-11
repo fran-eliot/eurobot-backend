@@ -15,6 +15,8 @@ from sqlalchemy import func
 
 from app.db.session import get_db
 from app.core.render import render
+from app.modules.activity_feed.activity_feed_constants import FeedEvent
+from app.modules.activity_feed.activity_feed_service import create_feed_event
 from app.utils.flash import flash_success
 
 from app.modules.activities.activity_model import Activity
@@ -187,8 +189,20 @@ def activity_create(
     )
 
     db.add(activity)
-    db.commit()
+    db.flush()
     db.refresh(activity)
+
+    create_feed_event(
+        db=db,
+        project_id=task.project_id,
+        user=current_user,
+        event_type=FeedEvent.ACTIVITY_CREATED,
+        message=f"{current_user.nombre} creó la actividad '<strong>{activity.name}</strong>'",
+        entity_type="activity",
+        entity_id=activity.id_activity,
+    )
+
+    db.commit()
 
     flash_success(
         request,
@@ -298,6 +312,9 @@ def activity_update(
 
     if not activity:
         raise HTTPException(404, "Actividad no encontrada")
+    
+    old_name = activity.name
+    old_status = activity.status
 
     activity.name = name
     activity.description = description
@@ -306,6 +323,19 @@ def activity_update(
     activity.user_id = user_id
     activity.time_spent = time_spent
 
+    db.flush()
+
+    if old_name != name or old_status != status:
+        create_feed_event(
+            db=db,
+            project_id=activity.task.project_id,
+            user=current_user,
+            event_type=FeedEvent.ACTIVITY_UPDATED,
+            message=f"{current_user.nombre} actualizó la actividad '<strong>{activity.name}</strong>'",
+            entity_type="activity",
+            entity_id=activity.id_activity,
+    )
+        
     db.commit()
 
     flash_success(
@@ -340,7 +370,21 @@ def activity_delete(
 
     if not activity:
         raise HTTPException(404, "Actividad no encontrada")
+    
+    activity_name = activity.name
+    project_id = activity.task.project_id
+    activity_id = activity.id_activity
 
+    create_feed_event(
+        db=db,
+        project_id=project_id,
+        user=current_user,
+        event_type=FeedEvent.ACTIVITY_DELETED,
+        message=f"{current_user.nombre} eliminó la actividad '<strong>{activity_name}</strong>'",
+        entity_type="activity",
+        entity_id=activity_id,
+    )
+    
     db.delete(activity)
     db.commit()
 

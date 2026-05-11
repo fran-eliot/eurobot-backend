@@ -137,6 +137,44 @@
 
     {% endcall %}
 
+    <!-- HISTORIAL -->
+
+    <div class="timeline">
+
+    {% for group in grouped_audit %}
+        <div class="time-label"  data-day="{{ day }}>
+            <span class="bg-secondary">{{ group.label }}</span>
+        </div>
+
+        {% for a in group.logs %}
+
+        <div>
+            <i class="fas {{ get_audit_icon(a.action) }} {{ get_audit_color(a.action) }}"></i>
+
+            <div class="timeline-item">
+
+                <span class="time">
+                    <i class="fas fa-clock"></i>
+                    {{ a.created_at.strftime("%H:%M") }}
+                </span>
+
+                <h3 class="timeline-header">
+                    <strong>{{ a.user.nombre if a.user else "Sistema" }}</strong>
+                </h3>
+
+                <div class="timeline-body">
+                    {{ a.description }}
+                </div>
+
+            </div>
+        </div>
+
+        {% endfor %}
+
+    {% endfor %}
+
+    </div>
+
 </div>
 
 {% endblock %}

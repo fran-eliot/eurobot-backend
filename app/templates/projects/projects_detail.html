@@ -2,125 +2,394 @@
 
 {% from "components/section_card.html" import section_card %}
 {% from "components/task_row.html" import task_row with context %}
+{% from "components/project_feed.html" import project_feed with context %}
 
 {% block content %}
 
-<div class="container-fluid">
+<div class="container-fluid py-4">
 
-<div class="d-flex justify-content-between align-items-center mb-4">
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap">
 
-    <div>
-        <h1>{{ project.name }}</h1>
-        <p class="text-muted mb-0">
-            Proyecto #{{ project.id_project }}
-        </p>
+        <div>
+            <h1 class="h2 mb-1">{{ project.name }}</h1>
+            <p class="text-muted mb-0">
+                Proyecto #{{ project.id_project }}
+            </p>
+        </div>
+
+        <div class="d-flex align-items-center flex-wrap gap-2">
+
+            {% if can("update", "projects", project) %}
+            <a href="/projects/{{ project.id_project }}/edit" class="btn btn-warning mr-2">
+                <i class="fas fa-edit"></i> Editar
+            </a>
+            {% endif %}
+
+            <a href="/projects/" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+
+        </div>
+
     </div>
 
-    <div>
+    <!-- MAIN LAYOUT -->
+    <div class="row">
 
-        {% if can("update", "projects", project) %}
-        <a href="/projects/{{ project.id_project }}/edit"
-           class="btn btn-warning">
-            <i class="fas fa-edit"></i> Editar
-        </a>
-        {% endif %}
+        <!-- MAIN CONTENT -->
+        <div class="col-lg-8 col-xl-9">
 
-        <a href="/projects/" class="btn btn-secondary">
-            Volver
-        </a>
+            <!-- INFO CARD -->
+            {% call section_card() %}
+            <div class="row">
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <strong>Estado:</strong><br>
+                    <span class="badge badge-info">{{ project.status }}</span>
+                </div>
+
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <strong>Total tareas:</strong><br>
+                    {{ project.tasks|length }}
+                </div>
+
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <strong>Creado por:</strong><br>
+                    {{ project.creator.nombre if project.creator else project.created_by }}
+                </div>
+
+                <div class="col-md-6 col-lg-3 mb-3">
+                    <strong>Fecha:</strong><br>
+                    {{ project.created_at.strftime("%d/%m/%Y") if project.created_at else "-" }}
+                </div>
+
+                <div class="col-12 mb-0">
+                    <strong>Descripción:</strong><br>
+                    {{ project.description or "-" }}
+                </div>
+            </div>
+            {% endcall %}
+
+            <!-- MIEMBROS -->
+            {% call section_card() %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">
+                    <i class="fas fa-users mr-2"></i> Miembros del proyecto
+                </h4>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="text-muted font-weight-bold">Coordinadores</h6>
+                    <ul class="list-group mb-3">
+                        {% for m in members if m.role == "coordinator" %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ m.user.nombre }}
+
+                            {% if can("update", "projects", project) %}
+                            <form method="post"
+                                  action="/projects/{{ project.id_project }}/members/{{ m.user.id_usuario }}/delete"
+                                  class="m-0">
+                                <button class="btn btn-sm btn-outline-danger py-0 px-2">
+                                    &times;
+                                </button>
+                            </form>
+                            {% endif %}
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-muted small">
+                            No hay coordinadores asignados.
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div class="col-md-6">
+                    <h6 class="text-muted font-weight-bold">Miembros</h6>
+                    <ul class="list-group mb-3">
+                        {% for m in members if m.role == "member" %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ m.user.nombre }}
+
+                            {% if can("update", "projects", project) %}
+                            <form method="post"
+                                  action="/projects/{{ project.id_project }}/members/{{ m.user.id_usuario }}/delete"
+                                  class="m-0">
+                                <button class="btn btn-sm btn-outline-danger py-0 px-2">
+                                    &times;
+                                </button>
+                            </form>
+                            {% endif %}
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-muted small">
+                            No hay miembros asignados.
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            {% if can("update", "projects", project) %}
+            <hr>
+
+            <form method="post"
+                  action="/projects/{{ project.id_project }}/members"
+                  class="mt-3">
+
+                <div class="form-row">
+                    <div class="col-md-5 mb-2">
+                        <select name="user_id" class="form-control" required>
+                            <option value="">Seleccionar usuario...</option>
+                            {% for user in available_users %}
+                            <option value="{{ user.id_usuario }}">
+                                {{ user.nombre }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="col-md-4 mb-2">
+                        <select name="role" class="form-control">
+                            <option value="member">Miembro</option>
+                            <option value="coordinator">Coordinador</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3 mb-2">
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <i class="fas fa-plus"></i> Añadir
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+            {% endif %}
+            {% endcall %}
+
+            <!-- TAREAS LISTA -->
+            {% call section_card() %}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h4 class="mb-0">
+                    <i class="fas fa-tasks mr-2"></i> Lista de Tareas
+                </h4>
+
+                {% if is_project_coordinator(current_user, project) or can("create", "tasks") %}
+                <a href="/tasks/form?project_id={{ project.id_project }}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus"></i> Nueva tarea
+                </a>
+                {% endif %}
+            </div>
+
+            {% if project.tasks %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <tbody>
+                        {% for task in project.tasks %}
+                            {{ task_row(task) }}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted font-italic mb-0">
+                No hay tareas registradas en este proyecto.
+            </p>
+            {% endif %}
+            {% endcall %}
+
+            <!-- KANBAN -->
+            {% call section_card() %}
+            <h4 class="mb-4">
+                <i class="fas fa-columns mr-2"></i> Kanban
+            </h4>
+
+            <div class="row">
+
+                <!-- TODO -->
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-light shadow-sm">
+                        <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                            <span>Por hacer</span>
+                            <span class="badge badge-light kanban-count" data-count-status="todo">
+                                {{ kanban.todo|length }}
+                            </span>
+                        </div>
+
+                        <div class="card-body kanban-column p-2 bg-light"
+                             data-status="todo"
+                             style="min-height: 200px;">
+
+                            {% for task in kanban.todo %}
+                            <div class="card mb-2 p-3 shadow-sm kanban-task"
+                                 {% if can("update", "tasks", task) %}draggable="true"{% endif %}
+                                 data-task-id="{{ task.id_task }}">
+
+                                <strong class="d-block">{{ task.name }}</strong>
+
+                                <small class="text-muted">
+                                    <i class="fas fa-user-circle"></i>
+                                    {{ task.assignee.nombre if task.assignee else "Sin asignar" }}
+                                </small>
+
+                                {% if can("update", "tasks", task) %}
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-primary mt-2 btn-block js-change-status"
+                                        data-task-id="{{ task.id_task }}"
+                                        data-next-status="doing">
+                                    Empezar
+                                </button>
+                                {% endif %}
+
+                            </div>
+                            {% else %}
+                            <div class="kanban-empty">
+                                <i class="fas fa-inbox"></i>
+                                <span>Sin tareas</span>
+                            </div>
+                            {% endfor %}
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DOING -->
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-light shadow-sm">
+                        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                            <span>En progreso</span>
+                            <span class="badge badge-light kanban-count" data-count-status="doing">
+                                {{ kanban.doing|length }}
+                            </span>
+                        </div>
+
+                        <div class="card-body kanban-column p-2 bg-light"
+                             data-status="doing"
+                             style="min-height: 200px;">
+
+                            {% for task in kanban.doing %}
+                            <div class="card mb-2 p-3 shadow-sm kanban-task"
+                                 {% if can("update", "tasks", task) %}draggable="true"{% endif %}
+                                 data-task-id="{{ task.id_task }}">
+
+                                <strong class="d-block">{{ task.name }}</strong>
+
+                                <small class="text-muted">
+                                    <i class="fas fa-user-circle"></i>
+                                    {{ task.assignee.nombre if task.assignee else "Sin asignar" }}
+                                </small>
+
+                                {% if can("update", "tasks", task) %}
+                                <button type="button"
+                                        class="btn btn-sm btn-success mt-2 btn-block js-change-status"
+                                        data-task-id="{{ task.id_task }}"
+                                        data-next-status="done">
+                                    Finalizar
+                                </button>
+                                {% endif %}
+
+                            </div>
+                            {% else %}
+                            <div class="kanban-empty">
+                                <i class="fas fa-inbox"></i>
+                                <span>Sin tareas</span>
+                            </div>
+                            {% endfor %}
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DONE -->
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100 border-light shadow-sm">
+                        <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                            <span>Completado</span>
+                            <span class="badge badge-light kanban-count" data-count-status="done">
+                                {{ kanban.done|length }}
+                            </span>
+                        </div>
+
+                        <div class="card-body kanban-column p-2 bg-light"
+                             data-status="done"
+                             style="min-height: 200px;">
+
+                            {% for task in kanban.done %}
+                            <div class="card mb-2 p-3 shadow-sm kanban-task"
+                                 {% if can("update", "tasks", task) %}draggable="true"{% endif %}
+                                 data-task-id="{{ task.id_task }}">
+
+                                <strong class="d-block text-muted" style="text-decoration: line-through;">
+                                    {{ task.name }}
+                                </strong>
+
+                                <small class="text-muted">
+                                    <i class="fas fa-check-circle text-success"></i>
+                                    Completada
+                                </small>
+
+                            </div>
+                            {% else %}
+                            <div class="kanban-empty">
+                                <i class="fas fa-inbox"></i>
+                                <span>Sin tareas</span>
+                            </div>
+                            {% endfor %}
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            {% endcall %}
+
+        </div>
+
+        <!-- RIGHT SIDEBAR -->
+        <div class="col-lg-4 col-xl-3">
+
+            <div class="project-sidebar-sticky">
+
+                <!-- ONLINE USERS -->
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="card-title mb-0">
+                            <i class="fas fa-signal mr-2"></i>
+                            Usuarios conectados
+                        </h3>
+
+                        <span id="online-users-count" class="badge badge-success">
+                            {{ online_users|length if online_users else 0 }}
+                        </span>
+                    </div>
+
+                    <div class="card-body">
+                        <div id="online-users-list" class="online-users flex-wrap"></div>
+                    </div>
+                </div>
+
+                <!-- PROJECT FEED -->
+                {{ project_feed(feed_events) }}
+
+            </div>
+
+        </div>
 
     </div>
 
 </div>
 
-{% call section_card() %}
+{% endblock %}
 
-<div class="row">
+{% block extra_js %}
 
-    <div class="col-md-6 mb-3">
-        <strong>Estado:</strong><br>
-        <span class="badge badge-info">
-            {{ project.status }}
-        </span>
-    </div>
+<script>
+window.APP_CONFIG = {
+    currentUserId: Number("{{ current_user_id | tojson }}"),
+    projectId: Number("{{ project.id_project | tojson }}")
+};
+</script>
 
-    <div class="col-md-6 mb-3">
-        <strong>Total tareas:</strong><br>
-        {{ project.tasks|length }}
-    </div>
-
-    <div class="col-md-6 mb-3">
-        <strong>Creado por:</strong><br>
-        {{ project.created_by }}
-    </div>
-
-    <div class="col-md-6 mb-3">
-        <strong>Fecha:</strong><br>
-        {{ project.created_at }}
-    </div>
-
-    <div class="col-12 mb-3">
-        <strong>Descripción:</strong><br>
-        {{ project.description or "-" }}
-    </div>
-
-</div>
-
-{% endcall %}
-
-{% call section_card() %}
-
-<div class="d-flex justify-content-between align-items-center mb-3">
-
-    <h4 class="mb-0">
-        <i class="fas fa-tasks mr-2"></i>
-        Tareas del proyecto
-    </h4>
-
-    {% if can("create", "tasks") %}
-    <a href="/tasks/form?project_id={{ project.id_project }}"
-       class="btn btn-primary btn-sm">
-        <i class="fas fa-plus"></i> Nueva tarea
-    </a>
-    {% endif %}
-
-</div>
-
-{% if project.tasks %}
-
-<div class="table-responsive">
-
-<table class="table table-hover align-middle">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Proyecto</th>
-            <th>Estado</th>
-            <th>Prioridad</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-
-    <tbody>
-        {% for task in project.tasks %}
-            {{ task_row(task) }}
-        {% endfor %}
-    </tbody>
-</table>
-
-</div>
-
-{% else %}
-
-<div class="text-muted">
-    No hay tareas registradas.
-</div>
-
-{% endif %}
-
-{% endcall %}
-
-</div>
+<script src="{{ url_for('static', path='js/projects/project_detail.js') }}"></script>
 
 {% endblock %}

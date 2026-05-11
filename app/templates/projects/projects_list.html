@@ -7,110 +7,94 @@
 {% from "components/filters_bar.html" import filters_bar %}
 {% from "components/form.html" import input, select %}
 
-{% block extra_css %}
-    <link rel="stylesheet" href="/static/css/projects.css">
-{% endblock %}
-
 {% block content %}
 
 {% call section_card() %}
 
-    {% set total_count = projects|length if projects else 0 %}
+```
+{% set total_count = total_count if total_count is defined else (projects|length if projects else 0) %}
 
-    <!-- ===================================================== -->
-    <!-- 🧭 HEADER -->
-    <!-- ===================================================== -->
-    <div class="mb-4">
-        {{ page_header(
-            "Proyectos",
-            "project-diagram",
-            total_count,
-            "/projects/form",
-            "Nuevo proyecto",
-            "create",
-            "projects"
-        ) }}
-    </div>
+<div class="mb-4">
+    {{ page_header(
+        "Proyectos",
+        "project-diagram",
+        total_count,
+        "/projects/form",
+        "Nuevo proyecto",
+        "create",
+        "projects"
+    ) }}
+</div>
 
+<div class="projects-toolbar mb-4">
 
-    <!-- ===================================================== -->
-    <!-- 🔎 FILTROS (preparado para futuro) -->
-    <!-- ===================================================== -->
-    <div class="projects-toolbar mb-4">
+    {% call filters_bar("/projects/", "filters-pro") %}
 
-        {% call filters_bar("/projects/", "filters-pro") %}
+        <div class="col-md-6 mb-2">
+            {{ input(
+                "search",
+                "",
+                search if search else "",
+                type="text",
+                placeholder="Buscar por nombre..."
+            ) }}
+        </div>
 
-            <!-- BÚSQUEDA -->
-            <div class="col-md-6 mb-2">
-                {{ input(
-                    "search",
-                    "",
-                    search if search else "",
-                    type="text",
-                    placeholder="Buscar por nombre..."
-                ) }}
-            </div>
+        <div class="col-md-6 mb-2">
+            {{ select(
+                "status",
+                "",
+                [
+                    ("all", "Todos"),
+                    ("Activo", "Activos"),
+                    ("Finalizado", "Finalizados")
+                ],
+                status if status else "all"
+            ) }}
+        </div>
 
-            <!-- ESTADO -->
-            <div class="col-md-6 mb-2">
-                {{ select(
-                    "status",
-                    "",
-                    [
-                        ("all", "Todos"),
-                        ("Activo", "Activos"),
-                        ("Finalizado", "Finalizados")
-                    ],
-                    status if status else "all"
-                ) }}
-            </div>
+    {% endcall %}
 
-        {% endcall %}
+</div>
 
-    </div>
+<!-- MÉTRICAS -->
+<div class="stats-grid">
+    <div class="stat-card"><h3>{{ total_count }}</h3><p>Total</p></div>
+    <div class="stat-card"><h3>{{ active_count }}</h3><p>Activos</p></div>
+    <div class="stat-card"><h3>{{ finished_count }}</h3><p>Finalizados</p></div>
+</div>
 
-    <!-- ===================================================== -->
-    <!-- 📊 MÉTRICAS -->
-    <!-- ===================================================== -->
-    <div class="stats-grid">
-        <div class="stat-card"><h3>{{ total_count }}</h3><p>Total proyectos</p></div>
-        <div class="stat-card"><h3>{{ active_count }}</h3><p>Activos</p></div>
-        <div class="stat-card"><h3>{{ finished_count }}</h3><p>Finalizados</p></div>
-    </div>
+<!-- TABLA -->
+<div class="projects-table-wrap bg-white shadow-sm">
 
+    {{ data_table(
+        items=projects,
+        row_renderer=project_row,
 
-    <!-- ===================================================== -->
-    <!-- 📊 TABLA -->
-    <!-- ===================================================== -->
-    <div class="projects-table-wrap bg-white shadow-sm">
+        headers=[
+            "ID",
+            "Nombre",
+            "Estado",
+            "Creado por",
+            "Fecha",
+            "Acciones"
+        ],
 
-        {{ data_table(
-            items=projects,
-            row_renderer=project_row,
+        empty_title="No hay proyectos",
+        empty_icon="project-diagram",
+        empty_action_url="/projects/form",
+        empty_action_label="Crear proyecto",
+        empty_action_perm="create",
+        empty_resource="projects",
 
-            headers=[
-                "ID",
-                "Nombre",
-                "Estado",
-                "Creado por",
-                "Fecha",
-                "Acciones"
-            ],
+        page=page if page else 1,
+        total_pages=total_pages if total_pages else 1,
+        search=search if search else "",
+        status=status if status else "all"
+    ) }}
 
-            empty_title="No hay proyectos disponibles",
-            empty_icon="project-diagram",
-            empty_action_url="/projects/form",
-            empty_action_label="Crear proyecto",
-            empty_action_perm="create",
-            empty_resource="projects",
-
-            page=page if page else 1,
-            total_pages=total_pages if total_pages else 1,
-            search=search if search else "",
-            status=status if status else "all"
-        ) }}
-
-    </div>
+</div>
+```
 
 {% endcall %}
 

@@ -1,35 +1,41 @@
+# app/modules/tasks/tasks_web.py
+
+# 📋 Rutas web relacionadas con tareas: estas rutas manejan la creación, edición,
+# eliminación y visualización de tareas a través de formularios HTML. Incluyen 
+# validación, control de permisos utilizando las funciones definidas en 
+# project_permissions.py, y también emiten eventos a través de WebSockets para 
+# notificar a los usuarios en tiempo real cuando se crean o actualizan tareas, 
+# mejorando la experiencia de usuario sin necesidad de refrescar la página.
+
+
 from fastapi import APIRouter, Depends, Request, Form, HTTPException
 from fastapi.responses import RedirectResponse, HTMLResponse
-from sqlalchemy import func
-from sqlalchemy.orm import Session
-from pydantic import ValidationError
+from sqlalchemy.orm import Session, joinedload
 
+from app.core.authorization.policies import can_user_action
+from app.core.websockets import manager
 from app.db.session import get_db
 from app.core.render import render
-from app.core.templates import templates
-from app.modules.users.user_model import User
-from app.web.context import get_template_context
+from app.modules.audit.audit_model import AuditLog
+from app.modules.tasks.task_service import change_task_status_with_audit, create_task_with_audit, delete_task_with_audit, update_task_with_audit
 
-from app.modules.auth.auth_dependencies_web import (
-    require_permission_web,
-    get_current_user_web,
-)
-
+from app.modules.auth.auth_dependencies_web import require_permission_web
 from app.core.constants.resources import Resources
 from app.core.constants.actions import Actions
 
-from app.modules.tasks.task_model import Task
+from app.modules.tasks.task_model import Task, TaskStatusEnum
 from app.modules.projects.project_model import Project
+from app.modules.tasks.task_view_service import build_task_detail_view
+from app.modules.users.user_model import User
+from app.modules.projects.projects_service import get_available_users
 
-from app.utils.flash import flash_success
-from app.core.utils.validation  import format_pydantic_errors
 
 router = APIRouter(prefix="/tasks", tags=["Tasks Web"])
 
-# =========================================================
-# 📋 LISTADO DE TAREAS (con filtros + paginado)
-# =========================================================
 
+# =========================================================
+# 📋 LISTADO
+# =========================================================
 @router.get("/", response_class=HTMLResponse)
 def tasks_list(
     request: Request,
@@ -38,31 +44,20 @@ def tasks_list(
     project_id: int | None = None,
     page: int = 1,
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(Resources.TASKS, Actions.READ)
-    ),
+    current_user=Depends(require_permission_web(Resources.TASKS, Actions.READ)),
 ):
     per_page = 10
 
     query = db.query(Task)
 
     if search:
-        query = query.filter(
-            Task.name.ilike(f"%{search}%")
-        )
+        query = query.filter(Task.name.ilike(f"%{search}%"))
 
     if status != "all":
-        query = query.filter(
-            Task.status == status
-        )
+        query = query.filter(Task.status == status)
 
     if project_id:
-        query = query.filter(
-            Task.project_id == project_id
-        )
-
-    # Query filtrada para métricas
-    stats_query = query
+        query = query.filter(Task.project_id == project_id)
 
     total = query.count()
 
@@ -74,20 +69,11 @@ def tasks_list(
     )
 
     total_pages = (total + per_page - 1) // per_page
-
     projects = db.query(Project).all()
 
-    pending_count = stats_query.filter(
-        Task.status == "Pendiente"
-    ).count()
-
-    progress_count = stats_query.filter(
-        Task.status == "En progreso"
-    ).count()
-
-    completed_count = stats_query.filter(
-        Task.status == "Completada"
-    ).count()
+    pending_count = query.filter(Task.status == "todo").count()
+    progress_count = query.filter(Task.status == "doing").count()
+    completed_count = query.filter(Task.status == "done").count()
 
     return render(
         request,
@@ -111,50 +97,12 @@ def tasks_list(
 # =========================================================
 # 📝 FORM CREATE
 # =========================================================
-@router.get("/form", name="task_form_create")
+@router.get("/form")
 def task_create_form(
     request: Request,
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(Resources.TASKS, Actions.CREATE)
-    ),
+    current_user=Depends(require_permission_web(Resources.TASKS, Actions.CREATE)),
 ):
-    projects = db.query(Project).all()
-    users = db.query(User).all()
-
-    return templates.TemplateResponse(
-        request,
-        "tasks/tasks_form.html",
-        {
-            **get_template_context(request),
-            "task": None,
-            "projects": projects,
-            "users": users,
-            "form_data": None,
-            "errors": None,
-        },
-    )
-
-
-# =========================================================
-# 📝 FORM EDIT
-# =========================================================
-@router.get("/{task_id}/edit", response_class=HTMLResponse)
-def task_edit_form(
-    task_id: int,
-    request: Request,
-    db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(Resources.TASKS, Actions.UPDATE)
-    ),
-):
-    task = db.query(Task).filter(
-        Task.id_task == task_id
-    ).first()
-
-    if not task:
-        raise HTTPException(404, "Tarea no encontrada")
-
     projects = db.query(Project).all()
     users = db.query(User).all()
 
@@ -162,11 +110,39 @@ def task_edit_form(
         request,
         "tasks/tasks_form.html",
         {
-            "task": task,
+            "task": None,
             "projects": projects,
             "users": users,
-            "errors": None,
-            "form_data": None,
+            "available_users": users,
+        },
+    )
+
+
+# =========================================================
+# 📝 FORM EDIT
+# =========================================================
+@router.get("/{task_id}/edit")
+def task_edit_form(
+    task_id: int,
+    request: Request,
+    db: Session = Depends(get_db),
+    current_user=Depends(require_permission_web(Resources.TASKS, Actions.UPDATE)),
+):
+    task = db.query(Task).filter(Task.id_task == task_id).first()
+
+    if not task:
+        raise HTTPException(404, "Tarea no encontrada")
+
+    available_users = get_available_users(db, task.project_id)
+
+    return render(
+        request,
+        "tasks/tasks_form.html",
+        {
+            "task": task,
+            "projects": db.query(Project).all(),
+            "users": db.query(User).all(),
+            "available_users": available_users,
         },
     )
 
@@ -180,31 +156,35 @@ def task_create(
     name: str = Form(...),
     description: str = Form(""),
     project_id: int = Form(...),
-    assigned_user_id: int | None = Form(None),
-    status: str = Form("Pendiente"),
-    priority: str = Form("Media"),
+    assigned_to: int | None = Form(None),
+    status: str = Form("todo"),
+    priority: str = Form("medium"),
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(Resources.TASKS, Actions.CREATE)
-    ),
+    current_user=Depends(require_permission_web(Resources.TASKS, Actions.CREATE)),
 ):
-    task = Task(
+    project = db.query(Project).get(project_id)
+
+    if not project:
+        raise HTTPException(400, "Proyecto no existe")
+
+    if not can_user_action(Actions.CREATE, Resources.TASKS, current_user, project):
+        raise HTTPException(403, "No autorizado")
+
+    task = create_task_with_audit(
+        db,
         name=name,
-        description=description,
         project_id=project_id,
-        assigned_user_id=assigned_user_id,
+        current_user=current_user,
+        request=request,
+        description=description,
+        assigned_to=assigned_to,
         status=status,
-        priority=priority,
+        priority=priority
     )
 
-    db.add(task)
     db.commit()
-    db.refresh(task)
 
-    return RedirectResponse(
-        f"/tasks/{task.id_task}",
-        status_code=303
-    )
+    return RedirectResponse(f"/tasks/{task.id_task}", status_code=303)
 
 
 # =========================================================
@@ -217,83 +197,107 @@ def task_update(
     name: str = Form(...),
     description: str = Form(""),
     project_id: int = Form(...),
-    assigned_user_id: int | None = Form(None),
+    assigned_to: int | None = Form(None),
     status: str = Form(...),
     priority: str = Form(...),
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(Resources.TASKS, Actions.UPDATE)
-    ),
+    current_user=Depends(require_permission_web(Resources.TASKS, Actions.UPDATE)),
 ):
-    task = db.query(Task).filter(
-        Task.id_task == task_id
-    ).first()
+    task = db.query(Task).options(joinedload(Task.project)).get(task_id)
 
     if not task:
         raise HTTPException(404, "Tarea no encontrada")
 
-    task.name = name
-    task.description = description
-    task.project_id = project_id
-    task.assigned_user_id = assigned_user_id
-    task.status = status
-    task.priority = priority
+    if not can_user_action(Actions.UPDATE, Resources.TASKS, current_user, task):
+        raise HTTPException(403, "No autorizado")
+    
+    task = update_task_with_audit(
+        db,
+        task,
+        {
+            "name": name,
+            "description": description,
+            "project_id": project_id,
+            "assigned_to": assigned_to,
+            "status": status,
+            "priority": priority
+        },
+        current_user,
+        request
+    )
 
     db.commit()
 
-    return RedirectResponse(
-        f"/tasks/{task.id_task}",
-        status_code=303
-    )
+    return RedirectResponse(f"/tasks/{task.id_task}", status_code=303)
 
 
 # =========================================================
 # 👁️ DETALLE
 # =========================================================
-@router.get("/{task_id}", response_class=HTMLResponse)
+@router.get("/{task_id}")
 def task_detail(
     request: Request,
     task_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(Resources.TASKS, Actions.READ)
-    ),
+    current_user=Depends(require_permission_web(Resources.TASKS, Actions.READ)),
 ):
-    task = db.query(Task).filter(Task.id_task == task_id).first()
-
-    if not task:
-        raise HTTPException(404, "Tarea no encontrada")
+    context = build_task_detail_view(db, task_id,current_user)
 
     return render(
         request,
         "tasks/tasks_detail.html",
-        {
-            "task": task,
-        },
+        context,
     )
+
 
 # =========================================================
 # 🗑️ DELETE
 # =========================================================
 @router.post("/{task_id}/delete")
 def task_delete(
+    request: Request,
     task_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(Resources.TASKS, Actions.DELETE)
-    ),
+    current_user=Depends(require_permission_web(Resources.TASKS, Actions.DELETE)),
 ):
-    task = db.query(Task).filter(
-        Task.id_task == task_id
-    ).first()
+    task = db.query(Task).options(joinedload(Task.project)).get(task_id)
 
     if not task:
         raise HTTPException(404, "Tarea no encontrada")
 
-    db.delete(task)
+    if not can_user_action(Actions.DELETE, Resources.TASKS, current_user, task):
+        raise HTTPException(403, "No autorizado")
+    
+    delete_task_with_audit(db, task, current_user, request)
     db.commit()
 
-    return RedirectResponse(
-        "/tasks/",
-        status_code=303
+    return RedirectResponse("/tasks/", status_code=303)
+
+
+# =========================================================
+# 🔄 CAMBIO ESTADO (KANBAN)
+# =========================================================
+@router.post("/{task_id}/status")
+def change_task_status(
+    request: Request,
+    task_id: int,
+    new_status: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user=Depends(require_permission_web(Resources.TASKS, Actions.UPDATE)),
+):
+    task = db.query(Task).options(joinedload(Task.project)).get(task_id)
+
+    if not task:
+        raise HTTPException(404, "Tarea no encontrada")
+
+    change_task_status_with_audit(
+        db,
+        task,
+        new_status,
+        current_user,
+        request
     )
+
+    db.commit()
+
+    return {"ok": True}

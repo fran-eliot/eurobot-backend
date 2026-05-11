@@ -50,5 +50,11 @@ class Project(Base):
         foreign_keys=[created_by]
     )
 
+    members = relationship(
+        "ProjectMember",
+        back_populates="project",
+        cascade="all, delete-orphan"
+    )
+
     def __repr__(self):
         return f"<Project(id={self.id_project}, name='{self.name}')>"

@@ -20,6 +20,7 @@ from app.modules.tasks import tasks_web
 from app.modules.users import users_web
 from app.modules.users.user_router import router as users_router
 from app.web import auth_web
+from app.core.websockets import router as ws_router
 import app.db.models  # Importar modelos para que SQLAlchemy los reconozca
 
 def custom_openapi():
@@ -86,6 +87,7 @@ app.include_router(roles_web.router, tags=["Roles Web"])
 app.include_router(projects_web.router, tags=["Projects Web"])
 app.include_router(tasks_web.router, tags=["Tasks Web"])
 app.include_router(activities_web.router, tags=["Activities Web"])
+app.include_router(ws_router.router, tags=["WebSockets"])
 
 # Montar directorio de archivos estáticos
 app.mount("/static", StaticFiles(directory="app/static"), name="static")

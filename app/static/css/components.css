@@ -1,3 +1,4 @@
+/* components.css - Estilos para componentes reutilizables */
 .metric-card{
     border-radius:16px;
     transition:.18s ease;
@@ -66,3 +67,38 @@
 .th-fixed{
     width:180px;
 }
+
+/* ==========================================================
+   METRICS / STATS
+========================================================== */
+
+.stats-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:1rem;
+}
+
+.stat-card{
+    background:#fff;
+    padding:1.2rem;
+    border-radius:14px;
+    box-shadow:0 4px 14px rgba(0,0,0,.05);
+    transition:.2s ease;
+}
+
+.stat-card:hover{
+    transform:translateY(-3px);
+}
+
+.stat-card h3{
+    margin:0;
+    font-size:1.8rem;
+    font-weight:700;
+}
+
+.stat-card p{
+    margin:.4rem 0 0;
+    color:#6c757d;
+    font-size:.92rem;
+}
+

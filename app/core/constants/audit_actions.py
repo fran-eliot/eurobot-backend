@@ -1,3 +1,4 @@
+# app/core/constants/audit_actions.py
 class AuditAction:
     LOGIN = "LOGIN"
     LOGOUT = "LOGOUT"
@@ -15,3 +16,4 @@ class AuditAction:
     CREATE_TASK = "CREATE_TASK"
     UPDATE_TASK = "UPDATE_TASK"
     DELETE_TASK = "DELETE_TASK"
+    TASK_STATUS_CHANGE = "TASK_STATUS_CHANGE"

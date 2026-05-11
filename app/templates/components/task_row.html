@@ -1,13 +1,38 @@
 {% macro task_row(task) %}
 
+{% set status = task.status.value if task.status.value is defined else task.status %}
+{% set priority = task.priority.value if task.priority.value is defined else task.priority %}
+
+{% set status_labels = {
+    "todo": "Por hacer",
+    "doing": "En progreso",
+    "done": "Completada"
+} %}
+
+{% set status_badges = {
+    "todo": "badge-secondary",
+    "doing": "badge-info",
+    "done": "badge-success"
+} %}
+
+{% set priority_labels = {
+    "low": "Baja",
+    "medium": "Media",
+    "high": "Alta"
+} %}
+
+{% set priority_badges = {
+    "low": "badge-secondary",
+    "medium": "badge-warning",
+    "high": "badge-danger"
+} %}
+
 <tr>
 
-    <!-- ID -->
     <td class="text-muted">
         #{{ task.id_task }}
     </td>
 
-    <!-- Nombre -->
     <td>
         <a href="/tasks/{{ task.id_task }}"
            class="font-weight-semibold text-dark">
@@ -15,7 +40,6 @@
         </a>
     </td>
 
-    <!-- Proyecto -->
     <td>
         {% if task.project %}
         <a href="/projects/{{ task.project.id_project }}">
@@ -26,38 +50,18 @@
         {% endif %}
     </td>
 
-    <!-- Estado -->
     <td>
-        {% if task.status == "Pendiente" %}
-            <span class="badge badge-warning">Pendiente</span>
-
-        {% elif task.status == "En progreso" %}
-            <span class="badge badge-info">En progreso</span>
-
-        {% elif task.status == "Completada" %}
-            <span class="badge badge-success">Completada</span>
-
-        {% else %}
-            <span class="badge badge-light">
-                {{ task.status }}
-            </span>
-        {% endif %}
+        <span class="badge {{ status_badges.get(status, 'badge-light') }}">
+            {{ status_labels.get(status, status) }}
+        </span>
     </td>
 
-    <!-- Prioridad -->
     <td>
-        {% if task.priority == "Alta" %}
-            <span class="badge badge-danger">Alta</span>
-
-        {% elif task.priority == "Media" %}
-            <span class="badge badge-warning">Media</span>
-
-        {% else %}
-            <span class="badge badge-secondary">Baja</span>
-        {% endif %}
+        <span class="badge {{ priority_badges.get(priority, 'badge-secondary') }}">
+            {{ priority_labels.get(priority, priority) }}
+        </span>
     </td>
 
-    <!-- Acciones -->
     <td class="text-nowrap">
 
         {% if can("read", "tasks", task) %}

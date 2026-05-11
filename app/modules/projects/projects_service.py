@@ -4,7 +4,9 @@
 
 
 from sqlalchemy.orm import Session
+from app.modules.projects.project_member_model import ProjectMember
 from app.modules.projects.project_model import Project
+from app.modules.users.user_model import User
 
 
 def search_projects(
@@ -38,3 +40,20 @@ def search_projects(
     )
 
     return projects, total
+
+
+def get_available_users(db, project_id):
+    subquery = db.query(ProjectMember.user_id).filter_by(project_id=project_id)
+    return db.query(User).filter(~User.id_usuario.in_(subquery)).all()
+
+
+
+def remove_member(db, project_id, user_id):
+    member = db.query(ProjectMember).filter_by(
+        project_id=project_id,
+        user_id=user_id
+    ).first()
+
+    if member:
+        db.delete(member)
+        db.commit()

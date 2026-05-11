@@ -1,11 +1,12 @@
 # app/modules/auth/auth_dependencies_web.py
 # 🔐 Dependencias de autenticación y autorización (WEB)
 
-from fastapi import Depends, HTTPException, Request
+from fastapi import Depends, HTTPException, Request, WebSocket
 from sqlalchemy.orm import Session
 
 from app.core.authorization.policies import can_user_action
 from app.core.authorization.roles import has_required_role
+from app.core.security import validate_access_token
 from app.db.session import get_db
 from app.modules.users.user_model import User
 from app.modules.users.user_service import get_user_or_404
@@ -170,3 +171,5 @@ def require_permission_and_not_self_web(resource: str, action: str):
         return current_user
 
     return checker
+
+

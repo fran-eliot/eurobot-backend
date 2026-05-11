@@ -1,0 +1,80 @@
+/* =====================================================
+   PROJECT ACTIVITY FEED
+===================================================== */
+
+.project-sidebar-sticky {
+    position: sticky;
+    top: 90px;
+}
+
+.project-feed-card {
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.project-feed {
+    max-height: 520px;
+    overflow-y: auto;
+}
+
+.feed-item {
+    display: flex;
+    gap: .75rem;
+    align-items: flex-start;
+    padding: .75rem 0;
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.feed-item:last-child {
+    border-bottom: none;
+}
+
+.feed-icon {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.feed-icon i {
+    color: #fff;
+    font-size: .85rem;
+}
+
+.feed-content {
+    flex: 1;
+}
+
+.feed-message {
+    font-size: .9rem;
+    line-height: 1.35;
+}
+
+.feed-date {
+    margin-top: .2rem;
+    font-size: .75rem;
+    color: #6c757d;
+}
+
+.feed-item.feed-new {
+    animation: feedHighlight 1.8s ease;
+}
+
+.project-feed-empty {
+    padding: .5rem 0;
+}
+
+@keyframes feedHighlight {
+    0% {
+        background: #fff3cd;
+    }
+
+    100% {
+        background: transparent;
+    }
+}
+
+

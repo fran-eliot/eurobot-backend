@@ -4,6 +4,7 @@
 from fastapi import Request
 
 from app.core.authorization.policies import can_user_action
+from app.core.authorization.project_permissions import is_project_coordinator
 from app.core.authorization.roles import has_required_role
 from app.core.services.menu_service import (
     build_smart_breadcrumbs,
@@ -12,6 +13,7 @@ from app.core.services.menu_service import (
     mark_active_menu,
 )
 from app.core.utils.audit_ui import get_audit_color, get_audit_icon
+from app.modules.activity_feed.activity_feed_utils import get_feed_color, get_feed_icon
 from app.utils.flash import get_flash
 
 
@@ -33,13 +35,16 @@ def get_fallback_context():
         "has_perm": lambda *args: False,
         "is_owner": lambda target_user: False,
         "can": lambda action, resource, target=None: False,
+        "is_project_coordinator": lambda *args:False,
         "menu": [],
         "breadcrumbs": [],
         "page_title": "Aula Robótica",
         "page_heading": "",
         "flash_messages": [],
         "get_audit_icon": lambda action: "fa-info-circle",
-        "get_audit_color": lambda action: "bg-primary"
+        "get_audit_color": lambda action: "bg-primary",
+        "get_feed_icon": lambda event_type: "fa-info-circle",
+        "get_feed_color": lambda event_type: "bg-secondary"
     }
 
 
@@ -150,6 +155,7 @@ def get_template_context(request: Request):
             "has_perm": has_perm,
             "is_owner": is_owner,
             "can": can,
+            "is_project_coordinator": is_project_coordinator,
 
             # 🧭 navegación
             "menu": menu,
@@ -164,7 +170,11 @@ def get_template_context(request: Request):
 
             # 🎨 audit UI helpers
             "get_audit_icon": get_audit_icon,
-            "get_audit_color": get_audit_color
+            "get_audit_color": get_audit_color,
+
+            # activity_feed helpers
+            "get_feed_icon": get_feed_icon,
+            "get_feed_color": get_feed_color,
         }
 
     except Exception as e:

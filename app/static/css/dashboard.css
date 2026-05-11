@@ -29,13 +29,16 @@
     border-radius: 18px;
     padding: 1.25rem;
     box-shadow: 0 6px 20px rgba(0,0,0,.06);
-    transition: all .2s ease;
+    transition:
+        transform .18s ease,
+        box-shadow .18s ease;
     height: 100%;
 }
 
 .kpi-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 10px 28px rgba(0,0,0,.08);
+    box-shadow: 0 14px 28px rgba(0,0,0,.08);
+
 }
 
 .kpi-title {
@@ -68,6 +71,34 @@
 
 .chart-card .card-body {
     min-height: 320px;
+}
+
+.activity-feed-card .card-body {
+    max-height: 520px;
+    overflow-y: auto;
+}
+
+.activity-item {
+    transition: background .18s ease;
+}
+
+.activity-item:hover {
+    background: #f8f9fa;
+}
+
+.activity-item-new {
+    background: #fff3cd;
+    animation: dashboardFeedHighlight 1.8s ease;
+}
+
+@keyframes dashboardFeedHighlight {
+    0% {
+        background: #fff3cd;
+    }
+
+    100% {
+        background: transparent;
+    }
 }
 
 

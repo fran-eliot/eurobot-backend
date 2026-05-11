@@ -1,7 +1,20 @@
+/* FOUNDATION */
 @import url('/static/css/base.css');
 @import url('/static/css/layout.css');
+@import url('/static/css/utilities.css');
+
+/* DESIGN SYSTEM */
 @import url('/static/css/components.css');
 @import url('/static/css/tables.css');
 @import url('/static/css/forms.css');
-@import url('/static/css/utilities.css');
 @import url('/static/css/permissions.css');
+
+/* FEATURES */
+@import url('/static/css/tasks.css');
+@import url('/static/css/activities.css');
+@import url('/static/css/users.css');
+@import url('/static/css/kanban.css');
+@import url('/static/css/login.css');
+@import url('/static/css/dashboard.css');
+@import url('/static/css/projects.css');
+@import url('/static/css/activity_feed.css');
