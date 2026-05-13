@@ -16,6 +16,8 @@ from app.modules.audit.audit_service import log_action
 from app.modules.tasks.task_model import Task, TaskStatusEnum
 from app.modules.projects.project_model import Project
 from app.core.authorization.project_permissions import can_manage_tasks
+from app.modules.notifications.notification_constants import NotificationType
+from app.modules.notifications.notification_service import create_notification
 
 
 def create_task(
@@ -129,6 +131,18 @@ def create_task_with_audit(
             entity_id=task.id_task
         )
 
+        if task.assigned_to and current_user and task.assigned_to != current_user.id_usuario:
+            create_notification(
+                db=db,
+                user_id=task.assigned_to,
+                type=NotificationType.TASK_ASSIGNED,
+                title="Nueva tarea asignada",
+                message=f"Te han asignado la tarea '{task.name}'",
+                entity_type="task",
+                entity_id=task.id_task,
+                url=f"/tasks/{task.id_task}",
+            )
+
     return task
 
 
@@ -149,7 +163,7 @@ def change_task_status_with_audit(
 
     if old_status == new_status_enum:
         return task
-
+    
     task.status = new_status_enum
 
     if current_user and request:
@@ -199,6 +213,18 @@ def change_task_status_with_audit(
             entity_type="task",
             entity_id=task.id_task
         )
+
+        if task.assigned_to and current_user and task.assigned_to != current_user.id_usuario:
+            create_notification(
+                db=db,
+                user_id=task.assigned_to,
+                type=NotificationType.TASK_STATUS_CHANGED,
+                title="Estado de tarea actualizado",
+                message=f"La tarea '{task.name}' cambió a {new_status_enum.value}",
+                entity_type="task",
+                entity_id=task.id_task,
+                url=f"/tasks/{task.id_task}",
+            )
 
         return task
         
@@ -259,6 +285,8 @@ def update_task_with_audit(
     Actualiza una task y registra auditoría de cambios.
     """
 
+    old_assigned_to = task.assigned_to
+
     # 🔍 Campos auditables
     tracked_fields = {
         "name": "Nombre",
@@ -284,7 +312,7 @@ def update_task_with_audit(
 
     if not changes:
         return task
-
+    
     # =========================
     # Guardar
     # =========================
@@ -328,5 +356,22 @@ def update_task_with_audit(
             entity_type="task",
             entity_id=task.id_task,
         )
+
+        if (
+            task.assigned_to
+            and old_assigned_to != task.assigned_to
+            and current_user
+            and task.assigned_to != current_user.id_usuario
+        ):
+            create_notification(
+                db=db,
+                user_id=task.assigned_to,
+                type=NotificationType.TASK_ASSIGNED,
+                title="Tarea reasignada",
+                message=f"Te han asignado la tarea '{task.name}'",
+                entity_type="task",
+                entity_id=task.id_task,
+                url=f"/tasks/{task.id_task}",
+            )
         
     return task

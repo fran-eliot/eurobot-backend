@@ -56,5 +56,13 @@ class Activity(Base):
         back_populates="activities"
     )
 
+    # Adjuntos asociados a la actividad
+    attachments = relationship(
+        "ActivityAttachment",
+        back_populates="activity",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
+
     def __repr__(self):
         return f"<Activity(id={self.id_activity}, name={self.name}, hours={self.time_spent})>"

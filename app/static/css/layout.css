@@ -195,3 +195,111 @@
         transform: translateX(0);
     }
 }
+
+/* NOTIFICATIONS */
+.notification-dropdown {
+    min-width: 360px;
+    max-width: 420px;
+}
+
+.notification-item {
+    white-space: normal;
+}
+
+.notification-unread {
+    background: #eef4ff;
+}
+
+.notification-unread strong::before {
+    content: "●";
+    color: #0d6efd;
+    margin-right: .35rem;
+}
+
+#notification-count.notification-badge {
+    background-color: #dc3545 !important;
+    color: #fff !important;
+}
+
+.notification-toggle {
+    position: relative;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    color: #6b7280 !important;
+    transition: background .18s ease, color .18s ease;
+}
+
+.notification-toggle:hover {
+    background: #f3f4f6;
+    color: #0d6efd !important;
+}
+
+.notification-bell-icon {
+    font-size: 1.15rem;
+    line-height: 1;
+}
+
+.notification-badge {
+    position: absolute !important;
+    top: -2px !important;
+    right: -4px !important;
+
+    min-width: 18px;
+    height: 18px;
+
+    padding: 0 5px;
+
+    border-radius: 999px !important;
+
+    background-color: #dc3545 !important;
+    color: #ffffff !important;
+
+    font-size: 0.7rem !important;
+    font-weight: 700 !important;
+    line-height: 18px !important;
+    text-align: center;
+
+    display: inline-block !important;
+
+    box-shadow: 0 0 0 2px #fff;
+}
+
+.notification-page-list {
+    border-radius: 14px;
+    overflow: hidden;
+}
+
+.notification-page-item {
+    padding: 1.1rem 1.25rem;
+    border-left: 4px solid transparent;
+}
+
+.notification-page-unread {
+    background: #eef4ff;
+    border-left-color: #0d6efd;
+}
+
+.notification-page-icon {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 50%;
+    background: #f3f4f6;
+    color: #0d6efd;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.notification-page-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #0d6efd;
+    display: inline-block;
+}

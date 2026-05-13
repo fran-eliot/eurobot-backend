@@ -30,16 +30,14 @@ def add_member(db: Session, project_id: int, user_id: int, role: str):
     return member
 
 
-def remove_member(db: Session, project_id: int, user_id: int):
+def remove_member(db, project_id, user_id):
     member = db.query(ProjectMember).filter_by(
         project_id=project_id,
         user_id=user_id
     ).first()
 
-    if not member:
-        return None
+    if member:
+        db.delete(member)
+        return True
 
-    db.delete(member)
-    db.flush()
-
-    return member
+    return False

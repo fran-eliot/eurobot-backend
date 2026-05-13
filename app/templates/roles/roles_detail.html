@@ -101,7 +101,8 @@
                     {% endif %}
 
                     {% if can("delete", "roles") %}
-                        {{ btn_delete("/roles/" ~ role.id_rol ~ "/delete", "¿Eliminar rol?") }}
+                        {{ btn_delete("/roles/" ~ role.id_rol ~ "/delete", 
+                        confirm_title="¿Eliminar rol?") }}
                     {% endif %}
                 </div>
 

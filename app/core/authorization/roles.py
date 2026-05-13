@@ -1,8 +1,9 @@
 # Jerarquía de roles para validación
 
 ROLE_HIERARCHY = {
-    "admin": 3,
-    "profesor": 2,
+    "admin": 4,
+    "profesor": 3,
+    "coordinator":2,
     "estudiante": 1
 }
 

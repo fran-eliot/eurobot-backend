@@ -37,3 +37,15 @@ def emit_dashboard_event(payload: dict):
         asyncio.run(
             manager.broadcast_dashboard(payload)
         )
+
+
+def emit_user_event(user_id: int, payload: dict):
+    try:
+        loop = asyncio.get_running_loop()
+        loop.create_task(
+            manager.broadcast_to_user(user_id, payload)
+        )
+    except RuntimeError:
+        asyncio.run(
+            manager.broadcast_to_user(user_id, payload)
+        )

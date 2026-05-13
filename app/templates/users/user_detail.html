@@ -89,7 +89,8 @@
                 {% endif %}
 
                 {% if can("delete", "users", user) %}
-                    {{ btn_delete("/users/" ~ user.id_usuario ~ "/delete", "¿Eliminar usuario?") }}
+                    {{ btn_delete("/users/" ~ user.id_usuario ~ "/delete", 
+                    confirm_title="¿Eliminar usuario?") }}
                 {% endif %}
 
             </div>

@@ -82,9 +82,11 @@
 
         {% if can("delete", "tasks", task) %}
         <form method="post"
-              action="/tasks/{{ task.id_task }}/delete"
-              class="d-inline"
-              onsubmit="return confirm('¿Eliminar tarea?')">
+            action="/tasks/{{ task.id_task }}/delete"
+            class="d-inline js-confirm-form"
+            data-confirm-title="¿Eliminar tarea?"
+            data-confirm-text="Esta acción no se puede deshacer."
+            data-confirm-button="Sí, eliminar">
 
             <button class="btn btn-sm btn-outline-danger"
                     title="Eliminar">

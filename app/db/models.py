@@ -14,3 +14,5 @@ from app.modules.audit.audit_model import AuditLog
 from app.modules.projects.project_model import Project
 from app.modules.tasks.task_model import Task
 from app.modules.activities.activity_model import Activity
+from app.modules.notifications.notification_model import Notification
+from app.modules.activity_attachments.activity_attachment_model import ActivityAttachment

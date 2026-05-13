@@ -60,6 +60,9 @@
     opacity: .85;
 }
 
+.text-purple {
+    color: #7c3aed !important;
+}
 
 /* =====================================================
    CHART CARDS
@@ -70,7 +73,26 @@
 }
 
 .chart-card .card-body {
-    min-height: 320px;
+    min-height: auto;
+    height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chart-card canvas {
+    max-height: 260px !important;
+    max-width: 100%;
+}
+
+.chart-body-sm {
+    height: 320px !important;
+    max-height: 320px !important;
+    position: relative;
+}
+
+.chart-body-sm canvas {
+    max-height: 260px !important;
 }
 
 .activity-feed-card .card-body {

@@ -21,6 +21,10 @@ from app.modules.users import users_web
 from app.modules.users.user_router import router as users_router
 from app.web import auth_web
 from app.core.websockets import router as ws_router
+from app.modules.notifications import notifications_web
+from app.modules.activity_attachments import activity_attachments_web
+from starlette.middleware.sessions import SessionMiddleware
+from app.core.config import settings
 import app.db.models  # Importar modelos para que SQLAlchemy los reconozca
 
 def custom_openapi():
@@ -70,7 +74,13 @@ Todos los endpoints (excepto login) requieren autenticación mediante Bearer Tok
     }
 )
 
-# Agregar middleware de autenticación
+# Middleware de sesión PRIMERO
+app.add_middleware(
+    SessionMiddleware,
+    secret_key=settings.SECRET_KEY,
+)
+
+# Middleware de autenticación DESPUÉS
 app.add_middleware(AuthMiddleware)
 
 # 🔐 API
@@ -88,6 +98,8 @@ app.include_router(projects_web.router, tags=["Projects Web"])
 app.include_router(tasks_web.router, tags=["Tasks Web"])
 app.include_router(activities_web.router, tags=["Activities Web"])
 app.include_router(ws_router.router, tags=["WebSockets"])
+app.include_router(notifications_web.router,tags=["Notifications"])
+app.include_router(activity_attachments_web.router,tags=["Activity Attachments"])
 
 # Montar directorio de archivos estáticos
 app.mount("/static", StaticFiles(directory="app/static"), name="static")

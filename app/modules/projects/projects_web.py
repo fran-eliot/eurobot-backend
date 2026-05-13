@@ -12,12 +12,15 @@
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 
+from app.core.authorization.project_permissions import user_in_project
 from app.core.render import render
 from app.db.session import get_db
 
+from app.modules.activities.activity_model import Activity
 from app.modules.activity_feed.activity_feed_model import ProjectActivityFeed
 from app.modules.auth.auth_dependencies_web import require_permission_web
 from app.core.constants.actions import Actions
@@ -25,11 +28,13 @@ from app.core.constants.resources import Resources
 
 from app.modules.activity_feed.activity_feed_constants import FeedEvent
 from app.modules.activity_feed.activity_feed_service import create_feed_event
+from app.modules.notifications.notification_constants import NotificationType
+from app.modules.notifications.notification_service import create_notification
 from app.modules.users.user_model import User
 
 from app.modules.projects.project_members_service import add_member
 from app.modules.projects.project_model import Project
-from app.modules.projects.projects_service import get_available_users, remove_member, search_projects
+from app.modules.projects.projects_service import ensure_can_manage_project, ensure_can_manage_project_members, ensure_can_view_project, get_available_users, remove_member, search_projects
 from app.modules.tasks.task_model import Task
 from app.utils.flash import flash_success
 
@@ -61,6 +66,7 @@ def projects_list(
         status=status,
         page=page,
         per_page=per_page,
+        current_user=current_user
     )
 
     total_pages = (total + per_page - 1) // per_page
@@ -199,6 +205,24 @@ def project_detail(
             status_code=404,
             detail="Proyecto no encontrado",
         )
+    
+    ensure_can_view_project(current_user, project)
+
+    project_activities = (
+        db.query(Activity)
+        .join(Task, Activity.task_id == Task.id_task)
+        .filter(Task.project_id == project.id_project)
+        .order_by(Activity.created_at.desc())
+        .limit(10)
+        .all()
+    )
+
+    project_hours = (
+        db.query(func.coalesce(func.sum(Activity.time_spent), 0))
+        .join(Task, Activity.task_id == Task.id_task)
+        .filter(Task.project_id == project.id_project)
+        .scalar()
+    )
 
     tasks = (
         db.query(Task)
@@ -231,11 +255,13 @@ def project_detail(
         "projects/projects_detail.html",
         {
             "project": project,
+            "project_activities": project_activities,
+            "project_hours": project_hours,
             "tasks": tasks,
             "kanban": kanban,
             "feed_events": feed_events,
             "members":members,
-            "avialable_users": available_users,
+            "available_users": available_users,
             "current_user":current_user,
         },
     )
@@ -267,6 +293,8 @@ def project_edit_form(
             status_code=404,
             detail="Proyecto no encontrado",
         )
+    
+    ensure_can_manage_project(current_user, project)
 
     return render(
         request,
@@ -308,6 +336,8 @@ def project_update(
             status_code=404,
             detail="Proyecto no encontrado",
         )
+    
+    ensure_can_manage_project(current_user, project)
     
     old_name = project.name
     old_status = project.status
@@ -394,6 +424,8 @@ def project_delete(
             status_code=404,
             detail="Proyecto no encontrado",
         )
+    
+    ensure_can_manage_project(current_user, project)
 
     db.delete(project)
     db.commit()
@@ -432,6 +464,8 @@ def add_project_member(
 
     if not project:
         raise HTTPException(404, "Proyecto no encontrado")
+    
+    ensure_can_manage_project_members(current_user, project)
 
     user = db.query(User).filter(
         User.id_usuario == user_id
@@ -454,6 +488,17 @@ def add_project_member(
         ),
         entity_type="user",
         entity_id=user_id,
+    )
+
+    create_notification(
+        db=db,
+        user_id=user_id,
+        type=NotificationType.PROJECT_MEMBER_ADDED,
+        title="Nuevo proyecto asignado",
+        message=f"Te han añadido al proyecto '{project.name}' como {role}",
+        entity_type="project",
+        entity_id=project.id_project,
+        url=f"/projects/{project.id_project}",
     )
 
     db.commit()
@@ -488,6 +533,8 @@ def delete_member(
 
     if not project:
         raise HTTPException(404, "Proyecto no encontrado")
+    
+    ensure_can_manage_project_members(current_user, project)
 
     user = db.query(User).filter(
         User.id_usuario == user_id

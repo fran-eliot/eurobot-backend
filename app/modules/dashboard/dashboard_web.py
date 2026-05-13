@@ -42,8 +42,15 @@ def dashboard(
     # =========================================================
     # 📊 OBTENER MÉTRICAS
     # =========================================================
-    metrics = get_dashboard_metrics(db)
+    metrics = get_dashboard_metrics(db,current_user)
     print(metrics)  # Debug: imprimir métricas obtenidas
+
+    roles = [
+        r.nombre.lower()
+        for r in getattr(current_user, "roles", [])
+    ]
+
+    is_admin = "admin" in roles
 
     # =========================================================
     # 🎨 RENDER TEMPLATE
@@ -53,7 +60,8 @@ def dashboard(
             request,    
             "dashboard/dashboard.html",
             {
-                **metrics  # expandimos directamente en el contexto
+                **metrics,  # expandimos directamente en el contexto
+                "is_admin": is_admin
             }
         )
     except Exception as e:
@@ -65,3 +73,4 @@ def dashboard(
                 "error": "Error al cargar el dashboard"
             }
         )
+    

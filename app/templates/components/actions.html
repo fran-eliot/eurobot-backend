@@ -2,10 +2,14 @@
 
 {% if method == "post" %}
 <form method="post" action="{{ url }}" class="d-inline">
-    <button type="submit"
-            class="btn btn-{{ color }} btn-sm px-2 mr-1"
-            title="{{ title }}"
-            {% if confirm %}onclick="return confirm('{{ confirm }}')"{% endif %}>
+    <form method="post"
+      action="{{ url }}"
+      class="d-inline {% if confirm %}js-confirm-form{% endif %}"
+      {% if confirm %}
+      data-confirm-title="{{ confirm }}"
+      data-confirm-text="Esta acción no se puede deshacer."
+      data-confirm-button="Sí, continuar"
+      {% endif %}>
         <i class="fas {{ icon }}"></i>
     </button>
 </form>

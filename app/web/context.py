@@ -13,7 +13,9 @@ from app.core.services.menu_service import (
     mark_active_menu,
 )
 from app.core.utils.audit_ui import get_audit_color, get_audit_icon
+from app.db.session import SessionLocal
 from app.modules.activity_feed.activity_feed_utils import get_feed_color, get_feed_icon
+from app.modules.notifications.notification_service import count_unread_notifications, get_user_notifications
 from app.utils.flash import get_flash
 
 
@@ -44,7 +46,9 @@ def get_fallback_context():
         "get_audit_icon": lambda action: "fa-info-circle",
         "get_audit_color": lambda action: "bg-primary",
         "get_feed_icon": lambda event_type: "fa-info-circle",
-        "get_feed_color": lambda event_type: "bg-secondary"
+        "get_feed_color": lambda event_type: "bg-secondary",
+        "recent_notifications": [],
+        "unread_notifications_count": 0,
     }
 
 
@@ -142,6 +146,29 @@ def get_template_context(request: Request):
         # =========================================================
         flash_messages = get_flash(request)
 
+        # 8 . NOTIFICATIONS
+
+        recent_notifications = []
+        unread_notifications_count = 0
+
+        try:
+            with SessionLocal() as notification_db:
+                recent_notifications = get_user_notifications(
+                    notification_db,
+                    user_id,
+                    limit=5,
+                )
+
+                unread_notifications_count = count_unread_notifications(
+                    notification_db,
+                    user_id,
+                )
+
+        except Exception as e:
+            print("ERROR NOTIFICATIONS CONTEXT:", e)
+            recent_notifications = []
+            unread_notifications_count = 0
+
         # =========================================================
         # 📦 8. CONTEXTO FINAL
         # =========================================================
@@ -166,7 +193,7 @@ def get_template_context(request: Request):
             "page_heading": page_heading,
 
             # 💬 mensajes
-            "flash_messages": flash_messages,
+            "flash_messages":  flash_messages,
 
             # 🎨 audit UI helpers
             "get_audit_icon": get_audit_icon,
@@ -175,6 +202,10 @@ def get_template_context(request: Request):
             # activity_feed helpers
             "get_feed_icon": get_feed_icon,
             "get_feed_color": get_feed_color,
+
+            #notifications
+            "recent_notifications": recent_notifications,
+            "unread_notifications_count": unread_notifications_count,
         }
 
     except Exception as e:

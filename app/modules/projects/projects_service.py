@@ -3,7 +3,9 @@
 # actividades.
 
 
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from app.core.authorization.project_permissions import is_project_coordinator, user_in_project
 from app.modules.projects.project_member_model import ProjectMember
 from app.modules.projects.project_model import Project
 from app.modules.users.user_model import User
@@ -15,16 +17,27 @@ def search_projects(
     status: str = "all",
     page: int = 1,
     per_page: int = 10,
+    current_user=None,
 ):
     query = db.query(Project)
 
-    # 🔎 Buscar por nombre
+    if current_user:
+        roles = [
+            r.nombre.lower()
+            for r in getattr(current_user, "roles", [])
+        ]
+
+        if "admin" not in roles:
+            query = (
+                query.join(ProjectMember)
+                .filter(ProjectMember.user_id == current_user.id_usuario)
+            )
+
     if search:
         query = query.filter(
             Project.name.ilike(f"%{search}%")
         )
 
-    # 📊 Filtrar estado
     if status != "all":
         query = query.filter(
             Project.status == status
@@ -57,3 +70,57 @@ def remove_member(db, project_id, user_id):
     if member:
         db.delete(member)
         db.commit()
+
+
+def ensure_can_manage_project_members(current_user, project):
+    roles = [
+        r.nombre.lower()
+        for r in getattr(current_user, "roles", [])
+    ]
+
+    if "admin" in roles:
+        return
+
+    if is_project_coordinator(current_user, project):
+        return
+
+    raise HTTPException(
+        status_code=403,
+        detail="No tienes permisos para gestionar miembros de este proyecto",
+    )
+
+
+def ensure_can_manage_project(current_user, project):
+    roles = [
+        r.nombre.lower()
+        for r in getattr(current_user, "roles", [])
+    ]
+
+    if "admin" in roles:
+        return
+
+    if is_project_coordinator(current_user, project):
+        return
+
+    raise HTTPException(
+        status_code=403,
+        detail="No tienes permisos para gestionar este proyecto",
+    )
+
+
+def ensure_can_view_project(current_user, project):
+    roles = [
+        r.nombre.lower()
+        for r in getattr(current_user, "roles", [])
+    ]
+
+    if "admin" in roles:
+        return
+
+    if user_in_project(current_user, project):
+        return
+
+    raise HTTPException(
+        status_code=403,
+        detail="No tienes acceso a este proyecto",
+    )

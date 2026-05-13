@@ -31,16 +31,26 @@
 {% endmacro %}
 
 
-{% macro btn_delete(url, confirm_text="¿Seguro que deseas eliminar?") %}
+{% macro btn_delete(
+    url,
+    confirm_title="¿Seguro que deseas eliminar?",
+    confirm_text="Esta acción no se puede deshacer.",
+    confirm_button="Sí, eliminar"
+) %}
+
 <form method="post"
       action="{{ url }}"
-      class="d-inline"
-      onsubmit="return confirm('{{ confirm_text }}')">
+      class="d-inline js-confirm-form"
+      data-confirm-title="{{ confirm_title }}"
+      data-confirm-text="{{ confirm_text }}"
+      data-confirm-button="{{ confirm_button }}"
+      data-confirm-icon="danger">
 
     <button type="submit"
             class="btn btn-danger btn-sm">
         <i class="fas fa-trash mr-1"></i>
         Eliminar
     </button>
+
 </form>
 {% endmacro %}

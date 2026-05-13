@@ -3,7 +3,8 @@
 from app.db.base import Base
 from app.db.session import engine
 
-# Importar modelos
+# Importa todos los modelos para registrarlos en Base.metadata
+# import app.db.models   Los importamos en main
 
 
 def init_db():

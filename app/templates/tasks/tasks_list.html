@@ -15,7 +15,6 @@
 
 {% call section_card() %}
 
-    <!-- HEADER -->
     <div class="mb-4">
         {{ page_header(
             "Tareas",
@@ -28,7 +27,6 @@
         ) }}
     </div>
 
-    <!-- FILTROS -->
     <div class="mb-4">
 
         {% call filters_bar("/tasks/", "filters-tasks") %}
@@ -49,9 +47,9 @@
                     "",
                     [
                         ("all", "Todos"),
-                        ("Pendiente", "Pendiente"),
-                        ("En progreso", "En progreso"),
-                        ("Completada", "Completada")
+                        ("todo", "Por hacer"),
+                        ("doing", "En progreso"),
+                        ("done", "Completada")
                     ],
                     status
                 ) }}
@@ -76,7 +74,6 @@
 
     </div>
 
-    <!-- MÉTRICAS -->
     <div class="stats-grid mb-4">
 
         <div class="stat-card">
@@ -86,7 +83,7 @@
 
         <div class="stat-card">
             <h3>{{ pending_count }}</h3>
-            <p>Pendientes</p>
+            <p>Por hacer</p>
         </div>
 
         <div class="stat-card">
@@ -101,7 +98,6 @@
 
     </div>
 
-    <!-- TABLA -->
     <div class="bg-white shadow-sm rounded">
 
         {{ data_table(

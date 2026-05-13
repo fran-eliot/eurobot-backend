@@ -14,6 +14,7 @@ class ConnectionManager:
         self.rooms = {}
         self.users = {}
         self.dashboard_connections = []
+        self.user_connections = {}
 
     async def connect(self, websocket: WebSocket, project_id: int, user):
         await websocket.accept()
@@ -90,5 +91,43 @@ class ConnectionManager:
 
         for websocket in disconnected:
             self.disconnect_dashboard(websocket)
+
+    async def connect_user(self, websocket, user):
+        await websocket.accept()
+
+        user_id = user.id_usuario
+
+        if user_id not in self.user_connections:
+            self.user_connections[user_id] = []
+
+        self.user_connections[user_id].append(websocket)
+
+
+    def disconnect_user(self, websocket, user):
+        user_id = user.id_usuario
+
+        if user_id in self.user_connections:
+            if websocket in self.user_connections[user_id]:
+                self.user_connections[user_id].remove(websocket)
+
+            if not self.user_connections[user_id]:
+                del self.user_connections[user_id]
+
+
+    async def broadcast_to_user(self, user_id: int, message: dict):
+        connections = self.user_connections.get(user_id, [])
+
+        disconnected = []
+
+        for websocket in connections:
+            try:
+                await websocket.send_json(message)
+            except Exception:
+                disconnected.append(websocket)
+
+        for websocket in disconnected:
+            if websocket in self.user_connections.get(user_id, []):
+                self.user_connections[user_id].remove(websocket)
+
 
 manager = ConnectionManager()

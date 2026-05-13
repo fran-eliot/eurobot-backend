@@ -69,9 +69,11 @@
 
         {% if can("delete", "projects", project) %}
         <form method="post"
-              action="/projects/{{ project.id_project }}/delete"
-              class="d-inline"
-              onsubmit="return confirm('¿Eliminar este proyecto?')">
+            action="/projects/{{ project.id_project }}/delete"
+            class="d-inline js-confirm-form"
+            data-confirm-title="¿Eliminar Projecto?"
+            data-confirm-text="Esta acción no se puede deshacer."
+            data-confirm-button="Sí, eliminar">
 
             <button class="btn btn-sm btn-outline-danger"
                     title="Eliminar">

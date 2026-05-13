@@ -10,18 +10,37 @@
 {% block content %}
 
 {% set form_action = "/activities/" ~ activity.id_activity ~ "/edit" if activity else "/activities/form" %}
+{% set current_task_id = form_data.task_id if form_data else activity.task_id if activity else task_id %}
+{% set current_user_id = form_data.user_id if form_data else activity.user_id if activity else current_user_id %}
+{% set current_status = form_data.status if form_data else activity.status if activity else "Pendiente" %}
+{% set current_hours = form_data.time_spent if form_data else activity.time_spent if activity else "0" %}
 
 {% call section_card() %}
 
-<div class="mb-4">
-    <h2>
-        {{ "Editar actividad" if activity else "Nueva actividad" }}
-    </h2>
+<div class="d-flex justify-content-between align-items-start mb-4 flex-wrap">
+
+    <div>
+        <h2 class="mb-1">
+            <i class="fas fa-clipboard-list text-primary mr-2"></i>
+            {{ "Editar actividad" if activity else "Nueva actividad" }}
+        </h2>
+
+        <p class="text-muted mb-0">
+            Registra el avance, estado y horas invertidas en una tarea.
+        </p>
+    </div>
+
+    <a href="/activities/" class="btn btn-secondary mt-3 mt-md-0">
+        <i class="fas fa-arrow-left mr-1"></i>
+        Volver
+    </a>
+
 </div>
 
 {% if errors %}
 <div class="alert alert-danger">
-    <ul class="mb-0">
+    <strong>Revisa el formulario:</strong>
+    <ul class="mb-0 mt-2">
         {% for field, error in errors.items() %}
         <li><strong>{{ field }}:</strong> {{ error }}</li>
         {% endfor %}
@@ -31,103 +50,118 @@
 
 <form method="post" action="{{ form_action }}">
 
-<div class="row">
+    <div class="row">
 
-    <div class="col-md-6 mb-3">
-        {{ input(
-            "name",
-            "Nombre",
-            form_data.name if form_data else activity.name if activity else ""
-        ) }}
-    </div>
+        <div class="col-md-6 mb-3">
+            {{ input(
+                "name",
+                "Nombre",
+                form_data.name if form_data else activity.name if activity else "",
+                placeholder="Ej. Montaje del sensor ultrasónico"
+            ) }}
+        </div>
 
-    <div class="col-md-6 mb-3">
-        {{ select(
-            "status",
-            "Estado",
-            [
-                ("Pendiente", "Pendiente"),
-                ("En progreso", "En progreso"),
-                ("Completada", "Completada")
-            ],
-            form_data.status if form_data else activity.status if activity else "Pendiente"
-        ) }}
-    </div>
+        <div class="col-md-3 mb-3">
+            {{ select(
+                "status",
+                "Estado",
+                [
+                    ("Pendiente", "Pendiente"),
+                    ("En progreso", "En progreso"),
+                    ("Completada", "Completada")
+                ],
+                current_status
+            ) }}
+        </div>
 
-    <div class="col-md-6 mb-3">
-        <label>Tarea</label>
+        <div class="col-md-3 mb-3">
+            {{ input(
+                "time_spent",
+                "Horas invertidas",
+                current_hours,
+                type="number",
+                step="0.1",
+                min="0"
+            ) }}
+        </div>
 
-        <select name="task_id" class="form-control">
+        <div class="col-md-6 mb-3">
+            <label>Tarea</label>
 
-            {% for task in tasks %}
-            <option
-                value="{{ task.id_task }}"
-                {% if (activity and activity.task_id == task.id_task)
-                   or (task_id == task.id_task)
-                   or (form_data and form_data.task_id == task.id_task) %}
-                    selected
+            <select name="task_id" class="form-control" required>
+                {% if not tasks %}
+                <option value="">
+                    No hay tareas disponibles
+                </option>
                 {% endif %}
-            >
-                {{ task.name }}
-            </option>
-            {% endfor %}
 
-        </select>
+                {% for task in tasks %}
+                <option
+                    value="{{ task.id_task }}"
+                    {% if current_task_id|string == task.id_task|string %}
+                        selected
+                    {% endif %}
+                >
+                    {{ task.name }}
+                    {% if task.project %}
+                        — {{ task.project.name }}
+                    {% endif %}
+                </option>
+                {% endfor %}
+            </select>
+
+            <small class="form-text text-muted">
+                Solo aparecen tareas disponibles para tu rol o proyectos.
+            </small>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label>Usuario</label>
+
+            <select name="user_id" class="form-control">
+                <option value="">Sin asignar</option>
+
+                {% for user in users %}
+                <option
+                    value="{{ user.id_usuario }}"
+                    {% if current_user_id|string == user.id_usuario|string %}
+                        selected
+                    {% endif %}
+                >
+                    {{ user.nombre }}
+                </option>
+                {% endfor %}
+            </select>
+
+            <small class="form-text text-muted">
+                Responsable o autor de la actividad.
+            </small>
+        </div>
+
+        <div class="col-12 mb-3">
+            {{ textarea(
+                "description",
+                "Descripción",
+                form_data.description if form_data else activity.description if activity else "",
+                placeholder="Describe brevemente el trabajo realizado o pendiente..."
+            ) }}
+        </div>
+
     </div>
 
-    <div class="col-md-6 mb-3">
-        <label>Usuario</label>
+    <div class="d-flex gap-2 mt-4">
 
-        <select name="user_id" class="form-control">
+        <button class="btn btn-primary"
+                {% if not tasks %}disabled{% endif %}>
+            <i class="fas fa-save mr-1"></i>
+            {{ "Guardar cambios" if activity else "Crear actividad" }}
+        </button>
 
-            <option value="">Sin asignar</option>
+        <a href="/activities/" class="btn btn-secondary">
+            Cancelar
+        </a>
 
-            {% for user in users %}
-            <option
-                value="{{ user.id_usuario }}"
-                {% if (activity and activity.user_id == user.id_usuario)
-                   or (form_data and form_data.user_id == user.id_usuario) %}
-                    selected
-                {% endif %}
-            >
-                {{ user.nombre }}
-            </option>
-            {% endfor %}
-
-        </select>
     </div>
-
-    <div class="col-md-6 mb-3">
-        {{ input(
-            "time_spent",
-            "Horas invertidas",
-            form_data.time_spent if form_data else activity.time_spent if activity else "0",
-            type="number"
-        ) }}
-    </div>
-
-    <div class="col-12 mb-3">
-        {{ textarea(
-            "description",
-            "Descripción",
-            form_data.description if form_data else activity.description if activity else ""
-        ) }}
-    </div>
-
-</div>
-
-<div class="d-flex gap-2 mt-4">
-
-    <button class="btn btn-primary">
-        <i class="fas fa-save"></i>
-        {{ "Guardar cambios" if activity else "Crear actividad" }}
-    </button>
-
-    <a href="/activities/" class="btn btn-secondary">
-        Cancelar
-    </a>
-
-</div>
 
 </form>
 

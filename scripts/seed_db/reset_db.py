@@ -3,21 +3,22 @@
 
 from app.db.base import Base
 from app.db.session import engine
+
+# Importa todos los modelos antes de drop_all/create_all
+import app.db.models  
+
 from scripts.seed_db.seed_run import run as seed_run
 
 
 def reset_db():
     print("⚠ Reiniciando base de datos...")
 
-    # Drop
     Base.metadata.drop_all(bind=engine)
     print("🗑 Tablas eliminadas")
 
-    # Create
     Base.metadata.create_all(bind=engine)
     print("🏗 Tablas creadas")
 
-    # Seed
     seed_run()
 
     print("✅ Base reiniciada correctamente")

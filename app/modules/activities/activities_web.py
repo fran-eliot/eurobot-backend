@@ -10,13 +10,16 @@ from fastapi import (
     HTTPException,
 )
 from fastapi.responses import RedirectResponse
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
 
+from app.core.authorization.activity_permissions import ensure_can_view_activity
 from app.db.session import get_db
 from app.core.render import render
+from app.modules.activity_attachments.activity_attachment_model import ActivityAttachment
 from app.modules.activity_feed.activity_feed_constants import FeedEvent
 from app.modules.activity_feed.activity_feed_service import create_feed_event
+from app.modules.projects.project_member_model import ProjectMember
 from app.utils.flash import flash_success
 
 from app.modules.activities.activity_model import Activity
@@ -59,6 +62,28 @@ def activities_list(
 
     query = db.query(Activity)
 
+    roles = [
+        r.nombre.lower()
+        for r in getattr(current_user, "roles", [])
+    ]
+
+    query = query.join(Activity.task)
+
+    if "admin" not in roles:
+        if "estudiante" in roles:
+            query = query.filter(
+                Activity.user_id == current_user.id_usuario
+            )
+        else:
+            project_ids = [
+                row[0]
+                for row in db.query(ProjectMember.project_id)
+                .filter(ProjectMember.user_id == current_user.id_usuario)
+                .all()
+            ]
+
+            query = query.filter(Task.project_id.in_(project_ids))
+
     if search:
         query = query.filter(
             Activity.name.ilike(f"%{search}%")
@@ -87,7 +112,21 @@ def activities_list(
 
     total_pages = (total + per_page - 1) // per_page
 
-    tasks = db.query(Task).all()
+    if "admin" in roles:
+        tasks = db.query(Task).all()
+    else:
+        project_ids = [
+            row[0]
+            for row in db.query(ProjectMember.project_id)
+            .filter(ProjectMember.user_id == current_user.id_usuario)
+            .all()
+        ]
+
+        tasks = (
+            db.query(Task)
+            .filter(Task.project_id.in_(project_ids))
+            .all()
+        )
 
     pending_count = stats_query.filter(
         Activity.status == "Pendiente"
@@ -135,8 +174,28 @@ def activity_create_form(
         )
     ),
 ):
-    tasks = db.query(Task).all()
-    users = db.query(User).all()
+    roles = [
+        r.nombre.lower()
+        for r in getattr(current_user, "roles", [])
+    ]
+
+    if "admin" in roles:
+        tasks = db.query(Task).all()
+    else:
+        project_ids = [
+            row[0]
+            for row in db.query(ProjectMember.project_id)
+            .filter(ProjectMember.user_id == current_user.id_usuario)
+            .all()
+        ]
+
+        tasks = (
+            db.query(Task)
+            .filter(Task.project_id.in_(project_ids))
+            .all()
+        )
+
+    users = [current_user] if "estudiante" in roles else db.query(User).all()
 
     return render(
         request,
@@ -178,6 +237,21 @@ def activity_create(
 
     if not task:
         raise HTTPException(404, "Tarea no encontrada")
+    
+    fake_activity = Activity(
+        name=name,
+        task=task,
+        task_id=task.id_task,
+        user_id=user_id or current_user.id_usuario,
+    )
+
+    ensure_can_view_activity(db, current_user, fake_activity)
+
+    if "estudiante" in [
+        r.nombre.lower()
+        for r in getattr(current_user, "roles", [])
+    ]:
+        user_id = current_user.id_usuario
 
     activity = Activity(
         name=name,
@@ -230,12 +304,21 @@ def activity_detail(
         )
     ),
 ):
-    activity = db.query(Activity).filter(
-        Activity.id_activity == activity_id
-    ).first()
+    activity = (
+        db.query(Activity)
+        .options(
+            joinedload(Activity.task).joinedload(Task.project),
+            joinedload(Activity.user),
+            joinedload(Activity.attachments).joinedload(ActivityAttachment.uploader),
+        )
+        .filter(Activity.id_activity == activity_id)
+        .first()
+    )
 
     if not activity:
         raise HTTPException(404, "Actividad no encontrada")
+    
+    ensure_can_view_activity(db, current_user, activity)
 
     return render(
         request,
@@ -261,15 +344,43 @@ def activity_edit_form(
         )
     ),
 ):
-    activity = db.query(Activity).filter(
-        Activity.id_activity == activity_id
-    ).first()
+    activity = (
+        db.query(Activity)
+        .options(
+            joinedload(Activity.task).joinedload(Task.project),
+            joinedload(Activity.user),
+        )
+        .filter(Activity.id_activity == activity_id)
+        .first()
+    )
 
     if not activity:
         raise HTTPException(404, "Actividad no encontrada")
+    
+    ensure_can_view_activity(db, current_user, activity)
 
-    tasks = db.query(Task).all()
-    users = db.query(User).all()
+    roles = [
+        r.nombre.lower()
+        for r in getattr(current_user, "roles", [])
+    ]
+
+    if "admin" in roles:
+        tasks = db.query(Task).all()
+    else:
+        project_ids = [
+            row[0]
+            for row in db.query(ProjectMember.project_id)
+            .filter(ProjectMember.user_id == current_user.id_usuario)
+            .all()
+        ]
+
+        tasks = (
+            db.query(Task)
+            .filter(Task.project_id.in_(project_ids))
+            .all()
+        )
+
+    users = [current_user] if "estudiante" in roles else db.query(User).all()
 
     return render(
         request,
@@ -306,15 +417,42 @@ def activity_update(
         )
     ),
 ):
-    activity = db.query(Activity).filter(
-        Activity.id_activity == activity_id
-    ).first()
+    activity = (
+        db.query(Activity)
+        .options(
+            joinedload(Activity.task).joinedload(Task.project),
+            joinedload(Activity.user),
+        )
+        .filter(Activity.id_activity == activity_id)
+        .first()
+    )
 
     if not activity:
         raise HTTPException(404, "Actividad no encontrada")
     
+    ensure_can_view_activity(db, current_user, activity)
+    
     old_name = activity.name
     old_status = activity.status
+
+    new_task = db.query(Task).filter(
+        Task.id_task == task_id
+    ).first()
+
+    if not new_task:
+        raise HTTPException(404, "Tarea no encontrada")
+
+    fake_activity = Activity(
+        task=new_task,
+        task_id=new_task.id_task,
+        user_id=user_id or current_user.id_usuario,
+    )
+
+    ensure_can_view_activity(
+        db,
+        current_user,
+        fake_activity,
+    )
 
     activity.name = name
     activity.description = description
@@ -364,12 +502,20 @@ def activity_delete(
         )
     ),
 ):
-    activity = db.query(Activity).filter(
-        Activity.id_activity == activity_id
-    ).first()
+    activity = (
+        db.query(Activity)
+        .options(
+            joinedload(Activity.task).joinedload(Task.project),
+            joinedload(Activity.user),
+        )
+        .filter(Activity.id_activity == activity_id)
+        .first()
+    )
 
     if not activity:
         raise HTTPException(404, "Actividad no encontrada")
+    
+    ensure_can_view_activity(db, current_user, activity)
     
     activity_name = activity.name
     project_id = activity.task.project_id

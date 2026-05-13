@@ -8,9 +8,6 @@
 
 {% block content %}
 
-<!-- ===================================================== -->
-<!-- HERO -->
-<!-- ===================================================== -->
 <div class="dashboard-hero card border-0 shadow-sm mb-4">
     <div class="card-body d-flex justify-content-between align-items-center flex-wrap">
 
@@ -20,7 +17,11 @@
             </h2>
 
             <p class="mb-2 text-muted">
-                Panel general de Aula Robótica
+                {% if is_admin %}
+                    Panel general de administración
+                {% else %}
+                    Panel personal de Aula Robótica
+                {% endif %}
             </p>
 
             <small class="text-muted">
@@ -37,52 +38,91 @@
 </div>
 
 
-<!-- ===================================================== -->
 <!-- KPI CARDS -->
-<!-- ===================================================== -->
 <div class="row">
 
-    {% if can("read", "users") %}
+    {% if is_admin and can("read", "users") %}
     <div class="col-md-6 col-xl-3 mb-3">
         <a href="/users/" class="text-decoration-none text-reset">
+
             <div class="kpi-card">
+
                 <div class="d-flex justify-content-between">
+
                     <div>
                         <div class="kpi-title">Usuarios</div>
-                        <div class="kpi-value">{{ total_users }}</div>
+                        <div class="kpi-value">
+                            {{ total_users|default(0) }}
+                        </div>
                     </div>
 
                     <div class="kpi-icon text-primary">
                         <i class="fas fa-users"></i>
                     </div>
+
                 </div>
 
                 <small class="text-success">
-                    {{ active_users }} activos
+                    {{ active_users|default(0) }} activos
                 </small>
+
             </div>
+
         </a>
     </div>
     {% endif %}
 
 
-    {% if can("read", "roles") %}
+    {% if is_admin and can("read", "roles") %}
     <div class="col-md-6 col-xl-3 mb-3">
         <a href="/roles/" class="text-decoration-none text-reset">
+
             <div class="kpi-card">
+
                 <div class="d-flex justify-content-between">
+
                     <div>
                         <div class="kpi-title">Roles</div>
-                        <div class="kpi-value">{{ total_roles }}</div>
+                        <div class="kpi-value">
+                            {{ total_roles|default(0) }}
+                        </div>
                     </div>
 
                     <div class="kpi-icon text-success">
                         <i class="fas fa-user-shield"></i>
                     </div>
+
                 </div>
 
                 <small class="text-muted">
                     Seguridad y permisos
+                </small>
+
+            </div>
+
+        </a>
+    </div>
+    {% endif %}
+
+    {% if is_admin and can("read", "identities") %}
+    <div class="col-md-6 col-xl-3 mb-3">
+        <a href="/identities/" class="text-decoration-none text-reset">
+            <div class="kpi-card">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <div class="kpi-title">Identidades</div>
+                        <div class="kpi-value">
+                            {{ total_identities|default(0) }}
+                        </div>
+                    </div>
+
+                    <div class="kpi-icon text-purple">
+                        <i class="fas fa-id-card"></i>
+                    </div>
+                </div>
+
+                <small class="text-muted">
+                    {{ local_identities|default(0) }} locales · {{ external_identities|default(0) }} externas
                 </small>
             </div>
         </a>
@@ -93,22 +133,37 @@
     {% if can("read", "projects") %}
     <div class="col-md-6 col-xl-3 mb-3">
         <a href="/projects/" class="text-decoration-none text-reset">
+
             <div class="kpi-card">
+
                 <div class="d-flex justify-content-between">
+
                     <div>
-                        <div class="kpi-title">Proyectos</div>
-                        <div class="kpi-value">{{ total_projects }}</div>
+                        <div class="kpi-title">
+                            {% if is_admin %}
+                                Proyectos
+                            {% else %}
+                                Mis proyectos
+                            {% endif %}
+                        </div>
+
+                        <div class="kpi-value">
+                            {{ total_projects|default(0) }}
+                        </div>
                     </div>
 
                     <div class="kpi-icon text-warning">
                         <i class="fas fa-project-diagram"></i>
                     </div>
+
                 </div>
 
                 <small class="text-muted">
-                    {{ active_projects }} activos
+                    {{ active_projects|default(0) }} activos
                 </small>
+
             </div>
+
         </a>
     </div>
     {% endif %}
@@ -117,24 +172,115 @@
     {% if can("read", "tasks") %}
     <div class="col-md-6 col-xl-3 mb-3">
         <a href="/tasks/" class="text-decoration-none text-reset">
+
             <div class="kpi-card">
+
                 <div class="d-flex justify-content-between">
+
                     <div>
-                        <div class="kpi-title">Tareas</div>
-                        <div class="kpi-value">{{ total_tasks }}</div>
+                        <div class="kpi-title">
+                            {% if is_admin %}
+                                Tareas
+                            {% else %}
+                                Mis tareas
+                            {% endif %}
+                        </div>
+
+                        <div class="kpi-value">
+                            {{ total_tasks|default(0) }}
+                        </div>
                     </div>
 
                     <div class="kpi-icon text-danger">
                         <i class="fas fa-tasks"></i>
                     </div>
+
                 </div>
 
                 <small class="text-success">
-                    {{ completed_tasks }} completadas
+                    {{ completed_tasks|default(0) }} completadas
                 </small>
+
             </div>
+
         </a>
     </div>
+    {% endif %}
+
+
+    {% if can("read", "activities") %}
+    <div class="col-md-6 col-xl-3 mb-3">
+        <a href="/activities/" class="text-decoration-none text-reset">
+
+            <div class="kpi-card">
+
+                <div class="d-flex justify-content-between">
+
+                    <div>
+                        <div class="kpi-title">
+                            {% if is_admin %}
+                                Actividades
+                            {% else %}
+                                Mis actividades
+                            {% endif %}
+                        </div>
+
+                        <div class="kpi-value">
+                            {{ total_activities|default(0) }}
+                        </div>
+                    </div>
+
+                    <div class="kpi-icon text-info">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+
+                </div>
+
+                <small class="text-muted">
+                    Registros de trabajo
+                </small>
+
+            </div>
+
+        </a>
+    </div>
+    {% endif %}
+
+
+    {% if can("read", "activities") %}
+    <div class="col-md-6 col-xl-3 mb-3">
+
+        <div class="kpi-card">
+
+            <div class="d-flex justify-content-between">
+
+                <div>
+                    <div class="kpi-title">
+                        Horas
+                    </div>
+
+                    <div class="kpi-value">
+                        {{ "%.1f"|format(total_hours|default(0)) }}
+                    </div>
+                </div>
+
+                <div class="kpi-icon text-secondary">
+                    <i class="far fa-clock"></i>
+                </div>
+
+            </div>
+
+            <small class="text-muted">
+                Horas registradas
+            </small>
+
+        </div>
+
+    </div>
+    {% endif %}
+
+
+    {% if can("read", "tasks") %}
     <div class="col-md-6 col-xl-3 mb-3">
 
         <div class="kpi-card">
@@ -147,7 +293,7 @@
                     </div>
 
                     <div class="kpi-value">
-                        {{ completion_rate }}%
+                        {{ completion_rate|default(0) }}%
                     </div>
                 </div>
 
@@ -169,14 +315,14 @@
 </div>
 
 
-<!-- ===================================================== -->
 <!-- CHARTS -->
-<!-- ===================================================== -->
 <div class="row mb-4">
 
-    <!-- USERS -->
+    {% if is_admin %}
     <div class="col-lg-6 mb-4">
+
         <div class="card chart-card shadow-sm border-0 h-100">
+
             <div class="card-header bg-white border-0">
                 <h5 class="mb-0">
                     <i class="fas fa-users text-primary mr-1"></i>
@@ -187,13 +333,17 @@
             <div class="card-body">
                 <canvas id="usersChart"></canvas>
             </div>
+
         </div>
+
     </div>
+    {% endif %}
 
 
-    <!-- TASKS -->
-    <div class="col-lg-6 mb-4">
+    <div class="{% if is_admin %}col-lg-6{% else %}col-lg-12{% endif %} mb-4">
+
         <div class="card chart-card shadow-sm border-0 h-100">
+
             <div class="card-header bg-white border-0">
                 <h5 class="mb-0">
                     <i class="fas fa-tasks text-danger mr-1"></i>
@@ -201,22 +351,25 @@
                 </h5>
             </div>
 
-            <div class="card-body">
+            <div class="card-body chart-body-sm">
                 <canvas id="tasksChart"></canvas>
             </div>
+
         </div>
+
     </div>
 
 </div>
 
 
-<!-- ===================================================== -->
 <!-- RECENT ACTIVITY -->
-<!-- ===================================================== -->
 <div class="row">
 
+    {% if is_admin %}
     <div class="col-lg-8 mb-4">
+
         <div class="card shadow-sm border-0 h-100">
+
             <div class="card-header bg-white border-0">
                 <h5 class="mb-0">
                     <i class="fas fa-history text-info mr-1"></i>
@@ -225,24 +378,43 @@
             </div>
 
             <div class="card-body p-0">
-                {{ audit_table(recent_logs, ctx.get_audit_color, ctx.get_audit_icon) }}
+                {{ audit_table(
+                    recent_logs,
+                    ctx.get_audit_color,
+                    ctx.get_audit_icon
+                ) }}
             </div>
-        </div>
-    </div>
 
-    <div class="col-lg-4 mb-4">
+        </div>
+
+    </div>
+    {% endif %}
+
+
+    <div class="{% if is_admin %}col-lg-4{% else %}col-lg-12{% endif %} mb-4">
+
         <div class="card shadow-sm border-0 h-100 activity-feed-card">
+
             <div class="card-header bg-white border-0">
+
                 <h5 class="mb-0">
                     <i class="fas fa-bolt text-warning mr-1"></i>
-                    Actividad reciente
+
+                    {% if is_admin %}
+                        Actividad reciente
+                    {% else %}
+                        Actividad de mis proyectos
+                    {% endif %}
                 </h5>
+
             </div>
 
             <div class="card-body p-0" id="dashboard-feed-list">
+
                 {% for item in recent_feed %}
                 <div class="px-3 py-3 border-bottom activity-item"
-                data-feed-id="{{ item.id_feed }}">
+                     data-feed-id="{{ item.id_feed }}">
+
                     <div class="small mb-1">
                         {{ item.message | safe }}
                     </div>
@@ -250,82 +422,106 @@
                     <div class="text-muted small">
                         {{ item.created_at.strftime("%d/%m/%Y %H:%M") }}
                     </div>
+
                 </div>
+
                 {% else %}
+
                 <div class="p-3 text-muted small">
                     No hay actividad reciente.
                 </div>
+
                 {% endfor %}
+
             </div>
+
         </div>
+
     </div>
 
 </div>
+
 
 {% endblock %}
 
 
 {% block extra_js %}
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-/* =====================================================
-   USERS CHART
-===================================================== */
-new Chart(document.getElementById("usersChart"), {
-    type: "doughnut",
-    data: {
-        labels: ["Activos", "Inactivos"],
-        datasets: [{
-            data: [
-                Number("{{ active_users|default(0) }}"),
-                Number("{{ inactive_users|default(0) }}")
-            ]
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: {
-            legend: {
-                position: "bottom"
-            }
+
+const IS_ADMIN = {{ "true" if is_admin else "false" }};
+
+if (IS_ADMIN) {
+
+    new Chart(document.getElementById("usersChart"), {
+
+        type: "doughnut",
+
+        data: {
+            labels: ["Activos", "Inactivos"],
+
+            datasets: [{
+                data: [
+                    Number("{{ active_users|default(0) }}"),
+                    Number("{{ inactive_users|default(0) }}")
+                ]
+            }]
         }
-    }
-});
+
+    });
+
+}
 
 
-/* =====================================================
-   TASKS CHART
-===================================================== */
 new Chart(document.getElementById("tasksChart"), {
+
     type: "doughnut",
+
     data: {
+
         labels: [
-            "Pendiente",
+            "Por hacer",
             "En progreso",
             "Completada"
         ],
+
         datasets: [{
+
             label: "Tareas",
+
             data: [
                 Number("{{ pending_tasks|default(0) }}"),
                 Number("{{ progress_tasks|default(0) }}"),
                 Number("{{ completed_tasks|default(0) }}")
             ],
+
             borderWidth: 1,
             borderRadius: 8
+
         }]
+
     },
+
     options: {
+
         responsive: true,
-        cutout: "65%",
+        maintainAspectRatio: false,
+        cutout: "68%",
+
         plugins: {
             legend: {
                 position: "bottom"
             }
         }
+
     }
+
 });
+
 </script>
+
 <script src="{{ url_for('static', path='js/dashboard/dashboard.js') }}"></script>
+
 {% endblock %}

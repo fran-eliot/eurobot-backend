@@ -42,13 +42,20 @@
 {% set has_perm = ctx.has_perm %}
 {% set is_owner = ctx.is_owner %}
 {% set can = ctx.can %}
+{% set is_project_coordinator = ctx.is_project_coordinator %}
 
 {% set menu = ctx.menu %}
 {% set breadcrumbs = ctx.breadcrumbs %}
 {% set page_heading = ctx.page_heading %}
+{% set flash_messages = ctx.flash_messages %}
 
 {% set get_audit_icon = ctx.get_audit_icon %}
 {% set get_audit_color = ctx.get_audit_color %}
+{% set get_feed_icon = ctx.get_feed_icon %}
+{% set get_feed_color = ctx.get_feed_color %}
+
+{% set recent_notifications = ctx.recent_notifications %}
+{% set unread_notifications_count = ctx.unread_notifications_count %}
 
 <body class="hold-transition sidebar-mini">
 
@@ -76,6 +83,65 @@
         <ul class="navbar-nav ml-auto align-items-center">
 
             {% if current_username %}
+
+            <li class="nav-item dropdown mr-3">
+                <a class="nav-link notification-toggle"
+                data-toggle="dropdown"
+                href="#"
+                id="notificationsDropdown">
+
+                    <i class="far fa-bell notification-bell-icon"></i>
+
+                    <span id="notification-count"
+                        class="notification-badge"
+                        {% if unread_notifications_count == 0 %}style="display:none;"{% endif %}>
+                        {{ unread_notifications_count }}
+                    </span>
+                </a>
+
+                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right notification-dropdown">
+
+                    <span class="dropdown-header">
+                        {{ unread_notifications_count }} notificaciones sin leer
+                    </span>
+
+                    <div class="dropdown-divider"></div>
+
+                    <div id="notification-list">
+                        {% for notification in recent_notifications %}
+                        <a href="/notifications/{{ notification.id_notification }}/open"
+                        class="dropdown-item notification-item {% if not notification.is_read %}notification-unread{% endif %}"
+                        data-notification-id="{{ notification.id_notification }}">
+
+                            <div class="d-flex flex-column">
+                                <strong class="small">
+                                    {{ notification.title }}
+                                </strong>
+
+                                <span class="small text-muted">
+                                    {{ notification.message | safe }}
+                                </span>
+
+                                <small class="text-muted">
+                                    {{ notification.created_at.strftime("%d/%m/%Y %H:%M") }}
+                                </small>
+                            </div>
+                        </a>
+
+                        <div class="dropdown-divider"></div>
+                        {% else %}
+                        <div class="dropdown-item text-muted small">
+                            No tienes notificaciones.
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <a href="/notifications/" class="dropdown-item dropdown-footer">
+                        Ver todas
+                    </a>
+                </div>
+            </li>
+
             <li class="nav-item mr-2">
                 <div class="navbar-user">
 
@@ -225,21 +291,6 @@
     </aside>
 
 
-    <!-- ===================== FLASH ===================== -->
-    <div class="container-fluid mt-2">
-        {% if ctx.flash_messages %}
-            {% for msg in ctx.flash_messages %}
-            <div class="alert alert-{{ msg.category }} alert-dismissible fade show">
-                {{ msg.message }}
-                <button type="button" class="close" data-dismiss="alert">
-                    &times;
-                </button>
-            </div>
-            {% endfor %}
-        {% endif %}
-    </div>
-
-
     <!-- ===================== CONTENT ===================== -->
     <div class="content-wrapper">
 
@@ -289,7 +340,25 @@
 <script src="/static/adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="/static/adminlte/js/adminlte.min.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="{{ url_for('static', path='js/core/toasts.js') }}"></script>
+<script src="{{ url_for('static', path='js/core/dialog.js') }}"></script>
+<script src="{{ url_for('static', path='js/core/confirmations.js') }}"></script>
+
+{% if flash_messages %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    {% for msg in flash_messages %}
+    showToast({
+        title: "{{ 'Correcto' if msg.category == 'success' else 'Aviso' }}",
+        message: {{ msg.message | tojson }},
+        type: "{{ msg.category }}"
+    });
+    {% endfor %}
+});
+</script>
+{% endif %}
+<script src="{{ url_for('static', path='js/core/notifications.js') }}"></script>
 
 {% block extra_js %}{% endblock %}
 

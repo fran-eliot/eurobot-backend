@@ -1,10 +1,20 @@
 # scripts/seed_db/seed_users.py
-# Este archivo define la función para insertar datos de usuarios en la base de datos.
 
 from app.modules.users.user_model import User
 
 
 def seed_users(db, roles):
+    print("👥 Seeding users...")
+
+    if db.query(User).count() > 0:
+        print("⚠️ Users ya inicializados")
+        return {
+            "admins": db.query(User).filter(User.nombre.like("Admin%")).all(),
+            "profesores": db.query(User).filter(User.nombre.like("Profesor%")).all(),
+            "alumnos": db.query(User).filter(User.nombre.like("Alumno%")).all(),
+            "uah_users": db.query(User).filter(User.nombre.like("%UAH%")).all(),
+        }
+
     admins = [
         User(nombre="Admin Principal", activo=True),
         User(nombre="Admin Secundario", activo=True),
@@ -28,25 +38,27 @@ def seed_users(db, roles):
     all_users = admins + profesores + alumnos + uah_users
 
     db.add_all(all_users)
+    db.flush()
+
+    for user in admins:
+        user.roles.append(roles["admin"])
+
+    for user in profesores:
+        user.roles.append(roles["profesor"])
+
+    for user in alumnos:
+        user.roles.append(roles["estudiante"])
+
+    for user in uah_users:
+        user.roles.append(roles["uah_user"])
+
     db.commit()
 
-    for u in admins:
-        u.roles.append(roles["admin"])
-
-    for u in profesores:
-        u.roles.append(roles["profesor"])
-
-    for u in alumnos:
-        u.roles.append(roles["estudiante"])
-
-    for u in uah_users:
-        u.roles.append(roles["uah_user"])
-
-    db.commit()
+    print(f"✅ {len(all_users)} usuarios creados")
 
     return {
         "admins": admins,
         "profesores": profesores,
         "alumnos": alumnos,
-        "uah_users": uah_users
+        "uah_users": uah_users,
     }

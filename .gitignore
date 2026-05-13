@@ -23,3 +23,7 @@ __pycache__/
 # Contexto para LLMs
 LLM_CONTEXT/
 
+# Storage
+storage/activity_attachments/*
+!storage/activity_attachments/.gitkeep
+

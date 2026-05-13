@@ -78,6 +78,19 @@ class User(Base):
         back_populates="user"
     )
 
+    # Notificaciones
+    notifications = relationship(
+        "Notification",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
+    #Adjuntos subidos por el usuario
+    activity_attachments = relationship(
+        "ActivityAttachment",
+        back_populates="uploader",
+    )
+
     # =========================================================
     # 🧠 HELPERS (ligeros, sin lógica de negocio pesada)
     # =========================================================

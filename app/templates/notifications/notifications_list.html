@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% from "components/section_card.html" import section_card %}
+
+{% block content %}
+
+<div class="container-fluid">
+
+    {% call section_card() %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+
+        <div>
+            <h2 class="mb-1">
+                <i class="far fa-bell mr-2"></i>
+                Notificaciones
+            </h2>
+
+            <p class="text-muted mb-0">
+                Tienes {{ unread_count }} notificaciones sin leer.
+            </p>
+        </div>
+
+        {% if unread_count > 0 %}
+        <form method="post"
+              action="/notifications/read-all"
+              class="mt-2 mt-md-0">
+
+            <button class="btn btn-outline-primary">
+                <i class="fas fa-check-double mr-1"></i>
+                Marcar todas como leídas
+            </button>
+
+        </form>
+        {% endif %}
+
+    </div>
+
+    {% if notifications %}
+
+    <div class="list-group notification-page-list">
+
+        {% for notification in notifications %}
+
+        <a href="/notifications/{{ notification.id_notification }}/open"
+           class="list-group-item list-group-item-action notification-page-item {% if not notification.is_read %}notification-page-unread{% endif %}">
+
+            <div class="d-flex justify-content-between align-items-start">
+
+                <div class="d-flex">
+
+                    <div class="notification-page-icon mr-3">
+                        {% if notification.type == "TASK_ASSIGNED" %}
+                            <i class="fas fa-tasks"></i>
+                        {% elif notification.type == "TASK_STATUS_CHANGED" %}
+                            <i class="fas fa-exchange-alt"></i>
+                        {% elif notification.type == "PROJECT_MEMBER_ADDED" %}
+                            <i class="fas fa-project-diagram"></i>
+                        {% elif notification.type == "PROJECT_UPDATED" %}
+                            <i class="fas fa-edit"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle"></i>
+                        {% endif %}
+                    </div>
+
+                    <div>
+                        <div class="d-flex align-items-center mb-1">
+
+                            {% if not notification.is_read %}
+                            <span class="notification-page-dot mr-2"></span>
+                            {% endif %}
+
+                            <strong>
+                                {{ notification.title }}
+                            </strong>
+                        </div>
+
+                        <div class="text-muted mb-2">
+                            {{ notification.message | safe }}
+                        </div>
+
+                        <small class="text-muted">
+                            <i class="far fa-clock mr-1"></i>
+                            {{ notification.created_at.strftime("%d/%m/%Y %H:%M") }}
+                        </small>
+                    </div>
+
+                </div>
+
+                {% if not notification.is_read %}
+                <span class="badge badge-primary">
+                    Nueva
+                </span>
+                {% endif %}
+
+            </div>
+
+        </a>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <div class="text-center py-5 text-muted">
+
+        <i class="far fa-bell fa-3x mb-3"></i>
+
+        <h5>No tienes notificaciones</h5>
+
+        <p class="mb-0">
+            Cuando ocurra algo relevante para ti, aparecerá aquí.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+    {% endcall %}
+
+</div>
+
+{% endblock %}

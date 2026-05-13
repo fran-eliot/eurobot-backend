@@ -27,7 +27,6 @@
     ) }}
 </div>
 
-<!-- FILTROS -->
 <div class="mb-4">
 
     {% call filters_bar("/activities/", "filters-activities") %}
@@ -42,12 +41,12 @@
             ) }}
         </div>
 
-        <div class="col-md-4 mb-2">
+        <div class="col-md-3 mb-2">
             {{ select(
                 "status",
                 "",
                 [
-                    ("all", "Todos"),
+                    ("all", "Todos los estados"),
                     ("Pendiente", "Pendiente"),
                     ("En progreso", "En progreso"),
                     ("Completada", "Completada")
@@ -56,16 +55,19 @@
             ) }}
         </div>
 
-        <div class="col-md-4 mb-2">
+        <div class="col-md-5 mb-2">
             <select name="task_id" class="form-control">
                 <option value="">Todas las tareas</option>
 
                 {% for task in tasks %}
                 <option
                     value="{{ task.id_task }}"
-                    {% if task_id == task.id_task %}selected{% endif %}
+                    {% if task_id|string == task.id_task|string %}selected{% endif %}
                 >
                     {{ task.name }}
+                    {% if task.project %}
+                        — {{ task.project.name }}
+                    {% endif %}
                 </option>
                 {% endfor %}
             </select>
@@ -75,7 +77,6 @@
 
 </div>
 
-<!-- MÉTRICAS -->
 <div class="stats-grid mb-4">
 
     <div class="stat-card">
@@ -100,7 +101,6 @@
 
 </div>
 
-<!-- TABLA -->
 <div class="bg-white shadow-sm rounded">
 
     {{ data_table(

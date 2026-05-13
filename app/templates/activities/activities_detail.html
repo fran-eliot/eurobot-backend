@@ -8,31 +8,42 @@
 
 {% block content %}
 
+{% set status_badges = {
+    "Pendiente": "badge-warning",
+    "En progreso": "badge-info",
+    "Completada": "badge-success"
+} %}
+
 <div class="container-fluid">
 
 {% call section_card() %}
 
-<div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+<div class="d-flex justify-content-between align-items-start mb-4 flex-wrap">
 
     <div>
-        <h2 class="mb-1">{{ activity.name }}</h2>
+        <h2 class="mb-1">
+            <i class="fas fa-clipboard-list text-primary mr-2"></i>
+            {{ activity.name }}
+        </h2>
+
         <p class="text-muted mb-0">
             Actividad #{{ activity.id_activity }}
         </p>
     </div>
 
-    <div class="mt-3 mt-md-0">
+    <div class="mt-3 mt-md-0 d-flex gap-2">
 
         {% if can("update", "activities", activity) %}
         <a href="/activities/{{ activity.id_activity }}/edit"
            class="btn btn-warning">
-            <i class="fas fa-edit"></i>
+            <i class="fas fa-edit mr-1"></i>
             Editar
         </a>
         {% endif %}
 
         <a href="/activities/"
            class="btn btn-secondary">
+            <i class="fas fa-arrow-left mr-1"></i>
             Volver
         </a>
 
@@ -42,50 +53,258 @@
 
 <div class="row activity-meta">
 
-    <div class="col-md-4 mb-3">
-        <strong>ID</strong>
-        <div>{{ activity.id_activity }}</div>
-    </div>
-
-    <div class="col-md-4 mb-3">
-        <strong>Estado</strong>
-        <div>
-            <span class="badge badge-info">
-                {{ activity.status }}
-            </span>
+    <div class="col-md-3 mb-3">
+        <div class="activity-info-card">
+            <strong>ID</strong>
+            <div>#{{ activity.id_activity }}</div>
         </div>
     </div>
 
-    <div class="col-md-4 mb-3">
-        <strong>Horas invertidas</strong>
-        <div>{{ activity.time_spent }} h</div>
+    <div class="col-md-3 mb-3">
+        <div class="activity-info-card">
+            <strong>Estado</strong>
+            <div>
+                <span class="badge {{ status_badges.get(activity.status, 'badge-light') }}">
+                    {{ activity.status }}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="activity-info-card">
+            <strong>Horas invertidas</strong>
+            <div>
+                <i class="far fa-clock text-muted mr-1"></i>
+                {{ "%.1f"|format(activity.time_spent or 0) }} h
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+        <div class="activity-info-card">
+            <strong>Usuario</strong>
+            <div>
+                {% if activity.user %}
+                    <i class="fas fa-user text-primary mr-1"></i>
+                    {{ activity.user.nombre }}
+                {% else %}
+                    <span class="text-muted">Sin asignar</span>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
     <div class="col-md-6 mb-3">
-        <strong>Tarea</strong>
-        <div>
-            <a href="/tasks/{{ activity.task.id_task }}">
-                {{ activity.task.name }}
+        <div class="activity-info-card">
+            <strong>Tarea asociada</strong>
+
+            {% if activity.task %}
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-1">
+
+                <div>
+                    <i class="fas fa-tasks text-primary mr-1"></i>
+                    <strong>{{ activity.task.name }}</strong>
+                </div>
+
+                <a href="/tasks/{{ activity.task.id_task }}"
+                   class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-arrow-right mr-1"></i>
+                    Ver tarea
+                </a>
+
+            </div>
+
+            {% if can("create", "activities") %}
+            <a href="/activities/form?task_id={{ activity.task.id_task }}"
+               class="btn btn-sm btn-primary mt-3">
+                <i class="fas fa-plus mr-1"></i>
+                Nueva actividad en esta tarea
             </a>
+            {% endif %}
+
+            {% else %}
+            <span class="text-muted">Sin tarea</span>
+            {% endif %}
         </div>
     </div>
 
     <div class="col-md-6 mb-3">
-        <strong>Usuario</strong>
-        <div>
-            {% if activity.user %}
-                {{ activity.user.nombre }}
-            {% else %}
-                Sin asignar
-            {% endif %}
+        <div class="activity-info-card">
+            <strong>Proyecto</strong>
+            <div class="mt-1">
+                {% if activity.task and activity.task.project %}
+                <a href="/projects/{{ activity.task.project.id_project }}">
+                    <i class="fas fa-project-diagram mr-1"></i>
+                    {{ activity.task.project.name }}
+                </a>
+                {% else %}
+                <span class="text-muted">Sin proyecto</span>
+                {% endif %}
+            </div>
         </div>
     </div>
 
     <div class="col-12 mb-3">
         <strong>Descripción</strong>
-        <div class="description-box">
-            {{ activity.description or "-" }}
+        <div class="description-box mt-2">
+            {{ activity.description or "Sin descripción." }}
         </div>
+    </div>
+
+    <div class="col-12 mt-4">
+
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+            <div>
+                <h4 class="mb-1">
+                    <i class="fas fa-paperclip text-primary mr-2"></i>
+                    Adjuntos
+                </h4>
+
+                <p class="text-muted mb-0">
+                    Evidencias, documentos o archivos asociados a esta actividad.
+                </p>
+            </div>
+        </div>
+
+        {% if can("update", "activities", activity) %}
+        <form method="post"
+              action="/activity-attachments/upload"
+              enctype="multipart/form-data"
+              class="attachment-upload-box mb-4">
+
+            <input type="hidden"
+                   name="activity_id"
+                   value="{{ activity.id_activity }}">
+
+            <div class="row">
+
+                <div class="col-md-8 mb-3">
+                    <label>Archivo</label>
+
+                    <input type="file"
+                           name="file"
+                           class="form-control"
+                           required>
+
+                    <small class="form-text text-muted">
+                        Tamaño máximo permitido: 10 MB.
+                    </small>
+                </div>
+
+                <div class="col-md-4 mb-3 d-flex align-items-end">
+                    <button class="btn btn-primary btn-block">
+                        <i class="fas fa-upload mr-1"></i>
+                        Subir adjunto
+                    </button>
+                </div>
+
+                <div class="col-12">
+                    <label>Descripción del adjunto</label>
+
+                    <input type="text"
+                           name="description"
+                           class="form-control"
+                           maxlength="255"
+                           placeholder="Ej: Evidencia del montaje del brazo robótico">
+                </div>
+
+            </div>
+
+        </form>
+        {% endif %}
+
+        {% if activity.attachments %}
+
+        <div class="list-group attachment-list">
+
+            {% for attachment in activity.attachments %}
+
+            {% set icon = "fa-file" %}
+
+            {% if attachment.mime_type %}
+                {% if "pdf" in attachment.mime_type %}
+                    {% set icon = "fa-file-pdf" %}
+                {% elif "image" in attachment.mime_type %}
+                    {% set icon = "fa-file-image" %}
+                {% elif "word" in attachment.mime_type %}
+                    {% set icon = "fa-file-word" %}
+                {% elif "excel" in attachment.mime_type or "spreadsheet" in attachment.mime_type %}
+                    {% set icon = "fa-file-excel" %}
+                {% elif "zip" in attachment.mime_type or "compressed" in attachment.mime_type %}
+                    {% set icon = "fa-file-archive" %}
+                {% elif "text" in attachment.mime_type %}
+                    {% set icon = "fa-file-alt" %}
+                {% endif %}
+            {% endif %}
+
+            <div class="list-group-item d-flex justify-content-between align-items-center flex-wrap">
+
+                <div class="d-flex align-items-center mb-2 mb-md-0">
+
+                    <div class="attachment-icon mr-3">
+                        <i class="fas {{ icon }}"></i>
+                    </div>
+
+                    <div>
+                        <div class="font-weight-bold">
+                            {{ attachment.original_filename }}
+                        </div>
+
+                        {% if attachment.description %}
+                        <div class="small text-muted mt-1">
+                            {{ attachment.description }}
+                        </div>
+                        {% endif %}
+
+                        <small class="text-muted">
+                            {{ "%.1f"|format((attachment.size_bytes or 0) / 1024) }} KB
+                            · Subido por
+                            {{ attachment.uploader.nombre if attachment.uploader else "usuario desconocido" }}
+                            · {{ attachment.created_at.strftime("%d/%m/%Y %H:%M") }}
+                        </small>
+                    </div>
+
+                </div>
+
+                <div class="d-flex gap-2">
+
+                    <a href="/activity-attachments/{{ attachment.id_attachment }}/download"
+                       class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-download mr-1"></i>
+                        Descargar
+                    </a>
+
+                    {% if can("delete", "activities", activity) %}
+                    <form method="post"
+                        action="/activity-attachments/{{ attachment.id_attachment }}/delete"
+                        class="d-inline delete-attachment-form">
+
+                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                            <i class="fas fa-trash mr-1"></i>
+                            Eliminar
+                        </button>
+
+                    </form>
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="text-muted border rounded p-3 bg-light">
+            <i class="fas fa-info-circle mr-1"></i>
+            Esta actividad aún no tiene adjuntos.
+        </div>
+
+        {% endif %}
+
     </div>
 
 </div>
@@ -94,4 +313,29 @@
 
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelectorAll(".delete-attachment-form").forEach(form => {
+
+    form.addEventListener("submit", async function (e) {
+
+        e.preventDefault();
+
+        const confirmed = await confirmAction({
+            title: "¿Eliminar adjunto?",
+            text: "Esta acción no se puede deshacer",
+            confirmText: "Sí, eliminar",
+            cancelText: "Cancelar",
+            icon: "warning"
+        });
+
+        if (confirmed) {
+            form.submit();
+        }
+    });
+
+});
+</script>
 {% endblock %}

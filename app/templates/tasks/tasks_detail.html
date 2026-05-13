@@ -5,9 +5,35 @@
 
 {% block content %}
 
+{% set status = task.status.value if task.status.value is defined else task.status %}
+{% set priority = task.priority.value if task.priority.value is defined else task.priority %}
+
+{% set status_labels = {
+    "todo": "Por hacer",
+    "doing": "En progreso",
+    "done": "Completada"
+} %}
+
+{% set status_badges = {
+    "todo": "badge-secondary",
+    "doing": "badge-info",
+    "done": "badge-success"
+} %}
+
+{% set priority_labels = {
+    "low": "Baja",
+    "medium": "Media",
+    "high": "Alta"
+} %}
+
+{% set priority_badges = {
+    "low": "badge-secondary",
+    "medium": "badge-warning",
+    "high": "badge-danger"
+} %}
+
 <div class="container-fluid">
 
-    <!-- DETALLE -->
     {% call section_card() %}
 
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -45,21 +71,21 @@
 
         <div class="col-md-3 mb-3">
             <strong>Estado:</strong><br>
-            <span class="badge badge-info">
-                {{ task.status }}
+            <span class="badge {{ status_badges.get(status, 'badge-light') }}">
+                {{ status_labels.get(status, status) }}
             </span>
         </div>
 
         <div class="col-md-3 mb-3">
             <strong>Prioridad:</strong><br>
-            <span class="badge badge-warning">
-                {{ task.priority }}
+            <span class="badge {{ priority_badges.get(priority, 'badge-secondary') }}">
+                {{ priority_labels.get(priority, priority) }}
             </span>
         </div>
 
         <div class="col-md-6 mb-3">
             <strong>Responsable:</strong><br>
-            {{ task.assigned_user.nombre if task.assigned_user else "-" }}
+            {{ task.assignee.nombre if task.assignee else "-" }}
         </div>
 
         <div class="col-md-3 mb-3">
@@ -81,7 +107,6 @@
 
     {% endcall %}
 
-    <!-- ACTIVIDADES -->
     {% call section_card() %}
 
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -137,12 +162,12 @@
 
     {% endcall %}
 
-    <!-- HISTORIAL -->
-
+    {% if grouped_audit %}
     <div class="timeline">
 
-    {% for group in grouped_audit %}
-        <div class="time-label"  data-day="{{ day }}>
+        {% for group in grouped_audit %}
+
+        <div class="time-label" data-date="{{ group.date if group.date is defined else group.label }}">
             <span class="bg-secondary">{{ group.label }}</span>
         </div>
 
@@ -163,7 +188,7 @@
                 </h3>
 
                 <div class="timeline-body">
-                    {{ a.description }}
+                    {{ a.description | safe }}
                 </div>
 
             </div>
@@ -171,9 +196,10 @@
 
         {% endfor %}
 
-    {% endfor %}
+        {% endfor %}
 
     </div>
+    {% endif %}
 
 </div>
 
