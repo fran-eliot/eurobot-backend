@@ -27,9 +27,9 @@ class Permission(Base):
     # 🔗 relación inversa con roles (many-to-many)
     roles = relationship(
         "Role",
-        secondary="role_permissions",   # tabla intermedia
+        secondary="role_permissions",  # tabla intermedia
         back_populates="permissions",
-        lazy="selectin"                # ⚡ optimización de carga
+        lazy="selectin",  # ⚡ optimización de carga
     )
 
     def __repr__(self):
@@ -57,10 +57,7 @@ class Role(Base):
 
     # 🔗 relación con usuarios (many-to-many)
     usuarios = relationship(
-        "User",
-        secondary=UserRole.__table__,
-        back_populates="roles",
-        lazy="selectin"
+        "User", secondary=UserRole.__table__, back_populates="roles", lazy="selectin"
     )
 
     # 🔗 relación con permisos (many-to-many)
@@ -68,7 +65,7 @@ class Role(Base):
         "Permission",
         secondary="role_permissions",
         back_populates="roles",
-        lazy="selectin"
+        lazy="selectin",
     )
 
     def __repr__(self):
@@ -86,13 +83,9 @@ class RolePermission(Base):
     __tablename__ = "role_permissions"
 
     role_id = Column(
-        Integer,
-        ForeignKey("roles.id_rol", ondelete="CASCADE"),
-        primary_key=True
+        Integer, ForeignKey("roles.id_rol", ondelete="CASCADE"), primary_key=True
     )
 
     permission_id = Column(
-        Integer,
-        ForeignKey("permissions.id", ondelete="CASCADE"),
-        primary_key=True
+        Integer, ForeignKey("permissions.id", ondelete="CASCADE"), primary_key=True
     )

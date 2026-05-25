@@ -1,9 +1,9 @@
 # app/core/websockets/manager.py
 
-# 📋 Gestor de conexiones WebSocket: clase que maneja las conexiones WebSocket 
+# 📋 Gestor de conexiones WebSocket: clase que maneja las conexiones WebSocket
 # activas, permitiendo enviar mensajes a todos los clientes conectados. Este gestor se
-# utiliza para enviar notificaciones en tiempo real a los usuarios cuando ocurren 
-# eventos importantes, como la creación o actualización de tareas, sin necesidad de 
+# utiliza para enviar notificaciones en tiempo real a los usuarios cuando ocurren
+# eventos importantes, como la creación o actualización de tareas, sin necesidad de
 # que los usuarios tengan que refrescar la página.
 
 from fastapi import WebSocket
@@ -30,7 +30,6 @@ class ConnectionManager:
             "name": user.nombre,
         }
 
-
         await self.broadcast_users(project_id)
 
     def disconnect(self, websocket: WebSocket, project_id: int, user):
@@ -44,7 +43,6 @@ class ConnectionManager:
             del self.rooms[project_id]
             del self.users[project_id]
             return
-        
 
     async def broadcast_to_project(self, project_id: int, message: dict):
         connections = self.rooms.get(project_id, [])
@@ -102,7 +100,6 @@ class ConnectionManager:
 
         self.user_connections[user_id].append(websocket)
 
-
     def disconnect_user(self, websocket, user):
         user_id = user.id_usuario
 
@@ -112,7 +109,6 @@ class ConnectionManager:
 
             if not self.user_connections[user_id]:
                 del self.user_connections[user_id]
-
 
     async def broadcast_to_user(self, user_id: int, message: dict):
         connections = self.user_connections.get(user_id, [])

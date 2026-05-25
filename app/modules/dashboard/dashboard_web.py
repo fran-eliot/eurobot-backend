@@ -22,7 +22,7 @@ router = APIRouter()
 def dashboard(
     request: Request,
     db: Session = Depends(get_db),
-    current_user = Depends(require_permission_web(Resources.DASHBOARD, Actions.READ))
+    current_user=Depends(require_permission_web(Resources.DASHBOARD, Actions.READ)),
 ):
     """
     Vista principal del dashboard.
@@ -36,19 +36,16 @@ def dashboard(
     """
 
     logger.info("Entrando al dashboard con usuario: %s", current_user.nombre)
-     # Inyectamos db en el scope para acceso global en templates
-    request.scope["db"] = db 
+    # Inyectamos db en el scope para acceso global en templates
+    request.scope["db"] = db
 
     # =========================================================
     # 📊 OBTENER MÉTRICAS
     # =========================================================
-    metrics = get_dashboard_metrics(db,current_user)
+    metrics = get_dashboard_metrics(db, current_user)
     print(metrics)  # Debug: imprimir métricas obtenidas
 
-    roles = [
-        r.nombre.lower()
-        for r in getattr(current_user, "roles", [])
-    ]
+    roles = [r.nombre.lower() for r in getattr(current_user, "roles", [])]
 
     is_admin = "admin" in roles
 
@@ -57,20 +54,17 @@ def dashboard(
     # =========================================================
     try:
         return templates.TemplateResponse(
-            request,    
+            request,
             "dashboard/dashboard.html",
             {
                 **metrics,  # expandimos directamente en el contexto
-                "is_admin": is_admin
-            }
+                "is_admin": is_admin,
+            },
         )
     except Exception as e:
         logger.exception("Error renderizando dashboard: %s", e)
         return templates.TemplateResponse(
             request,
             "dashboard/dashboard.html",
-            {
-                "error": "Error al cargar el dashboard"
-            }
+            {"error": "Error al cargar el dashboard"},
         )
-    

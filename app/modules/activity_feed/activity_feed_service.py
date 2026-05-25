@@ -4,18 +4,9 @@ from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
 
-from app.modules.activity_feed.activity_feed_model import (
-    ProjectActivityFeed
-)
+from app.core.websockets.utils import emit_dashboard_event, emit_project_event
+from app.modules.activity_feed.activity_feed_model import ProjectActivityFeed
 
-from app.modules.activity_feed.activity_feed_constants import (
-    FeedEvent
-)
-
-from app.core.websockets.utils import (
-    emit_dashboard_event,
-    emit_project_event
-)
 
 def create_feed_event(
     db: Session,
@@ -50,7 +41,7 @@ def create_feed_event(
                 "message": feed_entry.message,
                 "user_id": feed_entry.user_id,
                 "created_at": feed_entry.created_at.isoformat(),
-            }
+            },
         },
     )
 
@@ -63,7 +54,7 @@ def create_feed_event(
                 "message": feed_entry.message,
                 "user_id": feed_entry.user_id,
                 "created_at": feed_entry.created_at.isoformat(),
-            }
+            },
         }
     )
 

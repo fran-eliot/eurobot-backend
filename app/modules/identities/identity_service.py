@@ -22,9 +22,7 @@ def get_identity_by_id(db: Session, identity_id: int):
     """
     Obtiene una identidad por ID.
     """
-    return db.query(Identity).filter(
-        Identity.id == identity_id
-    ).first()
+    return db.query(Identity).filter(Identity.id == identity_id).first()
 
 
 def get_identity_or_404(db: Session, identity_id: int):
@@ -34,10 +32,7 @@ def get_identity_or_404(db: Session, identity_id: int):
     identity = get_identity_by_id(db, identity_id)
 
     if not identity:
-        raise HTTPException(
-            status_code=404,
-            detail="Identidad no encontrada"
-        )
+        raise HTTPException(status_code=404, detail="Identidad no encontrada")
 
     return identity
 
@@ -46,11 +41,7 @@ def get_identity_or_404(db: Session, identity_id: int):
 # ➕ CREATE
 # =========================================================
 def create_identity(
-    db: Session,
-    email: str,
-    password: str,
-    user_id: int,
-    provider: str = "local"
+    db: Session, email: str, password: str, user_id: int, provider: str = "local"
 ):
     """
     Crea una nueva identidad.
@@ -62,22 +53,17 @@ def create_identity(
     """
 
     # 🔎 1. Email único
-    existing = db.query(Identity).filter(
-        Identity.email == email
-    ).first()
+    existing = db.query(Identity).filter(Identity.email == email).first()
 
     if existing:
-        raise HTTPException(
-            status_code=400,
-            detail="Email ya registrado"
-        )
+        raise HTTPException(status_code=400, detail="Email ya registrado")
 
     # 🔐 2. Crear identidad
     identity = Identity(
         email=email,
         password_hash=hash_password(password),
         user_id=user_id,
-        provider=provider
+        provider=provider,
     )
 
     db.add(identity)
@@ -95,7 +81,7 @@ def update_identity(
     email: str,
     user_id: int,
     provider: str,
-    password: str | None = None
+    password: str | None = None,
 ):
     """
     Actualiza una identidad existente.

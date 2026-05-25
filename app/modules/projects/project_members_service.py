@@ -9,19 +9,16 @@ from app.modules.projects.project_member_model import ProjectMember
 
 
 def add_member(db: Session, project_id: int, user_id: int, role: str):
-    existing = db.query(ProjectMember).filter_by(
-        project_id=project_id,
-        user_id=user_id
-    ).first()
+    existing = (
+        db.query(ProjectMember)
+        .filter_by(project_id=project_id, user_id=user_id)
+        .first()
+    )
 
     if existing:
         raise ValueError("Usuario ya en proyecto")
 
-    member = ProjectMember(
-        project_id=project_id,
-        user_id=user_id,
-        role=role
-    )
+    member = ProjectMember(project_id=project_id, user_id=user_id, role=role)
 
     db.add(member)
     db.flush()
@@ -31,10 +28,11 @@ def add_member(db: Session, project_id: int, user_id: int, role: str):
 
 
 def remove_member(db, project_id, user_id):
-    member = db.query(ProjectMember).filter_by(
-        project_id=project_id,
-        user_id=user_id
-    ).first()
+    member = (
+        db.query(ProjectMember)
+        .filter_by(project_id=project_id, user_id=user_id)
+        .first()
+    )
 
     if member:
         db.delete(member)

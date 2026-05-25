@@ -1,6 +1,7 @@
 # app/core/utils/validation.py
 # Utilidades para validación de datos, especialmente errores de Pydantic.
 
+
 def format_pydantic_errors(errors):
     formatted = {}
 

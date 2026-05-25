@@ -15,7 +15,10 @@ from app.core.services.menu_service import (
 from app.core.utils.audit_ui import get_audit_color, get_audit_icon
 from app.db.session import SessionLocal
 from app.modules.activity_feed.activity_feed_utils import get_feed_color, get_feed_icon
-from app.modules.notifications.notification_service import count_unread_notifications, get_user_notifications
+from app.modules.notifications.notification_service import (
+    count_unread_notifications,
+    get_user_notifications,
+)
 from app.utils.flash import get_flash
 
 
@@ -37,7 +40,7 @@ def get_fallback_context():
         "has_perm": lambda *args: False,
         "is_owner": lambda target_user: False,
         "can": lambda action, resource, target=None: False,
-        "is_project_coordinator": lambda *args:False,
+        "is_project_coordinator": lambda *args: False,
         "menu": [],
         "breadcrumbs": [],
         "page_title": "Aula Robótica",
@@ -97,14 +100,11 @@ def get_template_context(request: Request):
 
             if mode == "all":
                 return all(p in permissions for p in required)
-            else:            
-                return any(p in permissions for p in required)  
+            else:
+                return any(p in permissions for p in required)
 
         def is_owner(target_user) -> bool:
-            return (
-                target_user
-                and getattr(target_user, "id_usuario", None) == user_id
-            )
+            return target_user and getattr(target_user, "id_usuario", None) == user_id
 
         def can(action: str, resource: str, target=None) -> bool:
             return can_user_action(action, resource, payload, target)
@@ -112,10 +112,7 @@ def get_template_context(request: Request):
         # =========================================================
         # 📋 4. MENÚ DINÁMICO
         # =========================================================
-        menu = filter_menu_by_permissions(
-            get_menu_structure(),
-            has_perm
-        )
+        menu = filter_menu_by_permissions(get_menu_structure(), has_perm)
 
         menu = mark_active_menu(menu, request.url.path)
 
@@ -125,7 +122,7 @@ def get_template_context(request: Request):
 
         db = request.state.db if hasattr(request.state, "db") else None
 
-        request.scope["db"] = db 
+        request.scope["db"] = db
 
         if db:
             breadcrumbs = build_smart_breadcrumbs(menu, request, db)
@@ -137,8 +134,7 @@ def get_template_context(request: Request):
         # =========================================================
         page_heading = breadcrumbs[-1]["label"] if breadcrumbs else ""
         page_title = (
-            f"{page_heading} | Aula Robótica"
-            if page_heading else "Aula Robótica"
+            f"{page_heading} | Aula Robótica" if page_heading else "Aula Robótica"
         )
 
         # =========================================================
@@ -176,34 +172,27 @@ def get_template_context(request: Request):
             "current_user_id": user_id,
             "current_username": username,
             "current_user_roles": roles,
-
             # 🔐 helpers
             "has_role": has_role,
             "has_perm": has_perm,
             "is_owner": is_owner,
             "can": can,
             "is_project_coordinator": is_project_coordinator,
-
             # 🧭 navegación
             "menu": menu,
             "breadcrumbs": breadcrumbs,
-
             # 🏷️ UI
             "page_title": page_title,
             "page_heading": page_heading,
-
             # 💬 mensajes
-            "flash_messages":  flash_messages,
-
+            "flash_messages": flash_messages,
             # 🎨 audit UI helpers
             "get_audit_icon": get_audit_icon,
             "get_audit_color": get_audit_color,
-
             # activity_feed helpers
             "get_feed_icon": get_feed_icon,
             "get_feed_color": get_feed_color,
-
-            #notifications
+            # notifications
             "recent_notifications": recent_notifications,
             "unread_notifications_count": unread_notifications_count,
         }

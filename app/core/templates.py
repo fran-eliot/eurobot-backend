@@ -19,6 +19,7 @@ def can(ctx, action, resource, target=None):
     context = get_template_context(request)
     return context["can"](action, resource, target)
 
+
 templates.env.globals["can"] = can
 
 templates.env.globals["get_template_context"] = get_template_context

@@ -21,7 +21,7 @@ def get_menu_structure():
             "label": "Dashboard",
             "icon": "fas fa-tachometer-alt",
             "url": "/dashboard",
-            "permission": "dashboard:read"
+            "permission": "dashboard:read",
         },
         {
             "label": "Administración",
@@ -31,21 +31,21 @@ def get_menu_structure():
                     "label": "Usuarios",
                     "icon": "far fa-circle",
                     "url": "/users/",
-                    "permission": "users:read"
+                    "permission": "users:read",
                 },
                 {
                     "label": "Identidades",
                     "icon": "far fa-circle",
                     "url": "/identities/",
-                    "permission": "identities:read"
+                    "permission": "identities:read",
                 },
                 {
                     "label": "Roles",
                     "icon": "far fa-circle",
                     "url": "/roles/",
-                    "permission": "roles:read"
-                }
-            ]
+                    "permission": "roles:read",
+                },
+            ],
         },
         {
             "label": "Proyectos",
@@ -55,28 +55,25 @@ def get_menu_structure():
                     "label": "Ver proyectos",
                     "icon": "far fa-circle",
                     "url": "/projects/",
-                    "permission": "projects:read"
+                    "permission": "projects:read",
                 },
                 {
                     "label": "Nuevo proyecto",
                     "icon": "far fa-circle",
                     "url": "/projects/form",
-                    "permission": "projects:create"
-                }
-            ]
+                    "permission": "projects:create",
+                },
+            ],
         },
         {
             "label": "Estudiantes",
             "icon": "fas fa-user-graduate",
             "url": "/students/",
-            "permission": "students:read"
+            "permission": "students:read",
         },
-        {
-            "label": "Mi perfil",
-            "icon": "fas fa-user",
-            "url": "/users/me"
-        }
+        {"label": "Mi perfil", "icon": "fas fa-user", "url": "/users/me"},
     ]
+
 
 # =========================================================
 # 🔐 FILTRADO DE MENÚ POR PERMISOS
@@ -89,7 +86,6 @@ def filter_menu_by_permissions(menu, has_perm):
     filtered_menu = []
 
     for item in menu:
-
         # 🔹 copiar item base
         new_item = item.copy()
 
@@ -115,6 +111,7 @@ def filter_menu_by_permissions(menu, has_perm):
                 filtered_menu.append(new_item)
 
     return filtered_menu
+
 
 # =========================================================
 # 🧭 MARCAR MENÚ ACTIVO
@@ -142,6 +139,7 @@ def mark_active_menu(menu, current_path: str):
 
     return menu
 
+
 # =========================================================
 # 🧭 CONSTRUCCIÓN DE BREADCRUMBS
 # =========================================================
@@ -149,22 +147,18 @@ def build_breadcrumbs(menu, current_path: str):
     breadcrumbs = []
 
     for item in menu:
-
         if item.get("active"):
-            breadcrumbs.append({
-                "label": item["label"],
-                "url": item.get("url")
-            })
+            breadcrumbs.append({"label": item["label"], "url": item.get("url")})
 
         if "children" in item:
             for child in item["children"]:
                 if child.get("active"):
-                    breadcrumbs.append({
-                        "label": child["label"],
-                        "url": child.get("url")
-                    })
+                    breadcrumbs.append(
+                        {"label": child["label"], "url": child.get("url")}
+                    )
 
     return breadcrumbs
+
 
 # =========================================================
 # 🧭 BREADCRUMBS INTELIGENTES (con soporte para entidades dinámicas)
@@ -179,24 +173,18 @@ def build_smart_breadcrumbs(menu, request, db):
 
     # 🔹 base: menú
     for item in menu:
-
         if item.get("active"):
-            breadcrumbs.append({
-                "label": item["label"],
-                "url": item.get("url")
-            })
+            breadcrumbs.append({"label": item["label"], "url": item.get("url")})
 
         if "children" in item:
             for child in item["children"]:
                 if child.get("active"):
-                    breadcrumbs.append({
-                        "label": child["label"],
-                        "url": child.get("url")
-                    })
+                    breadcrumbs.append(
+                        {"label": child["label"], "url": child.get("url")}
+                    )
 
     # 🔥 dinámicos declarativos
     for route in DYNAMIC_BREADCRUMBS:
-
         match = re.match(route["pattern"], path)
 
         if match:
@@ -211,12 +199,9 @@ def build_smart_breadcrumbs(menu, request, db):
                 if "label" in route:
                     label = route["label"](entity)
                 else:
-                    label = getattr(entity, route["label_field",""], "Detalle")
+                    label = getattr(entity, route["label_field", ""], "Detalle")
 
-                breadcrumbs.append({
-                    "label": label, 
-                    "url": None
-                })
+                breadcrumbs.append({"label": label, "url": None})
 
                 break  # asumir solo un match
 

@@ -1,8 +1,8 @@
 # app/modules/activity_feed/activity_feed_model.py
-# 📋 Modelo de actividad de proyecto: representa las actividades relacionadas con un 
+# 📋 Modelo de actividad de proyecto: representa las actividades relacionadas con un
 # proyecto específico, incluyendo acciones como creación de tareas, cambios de estado,
-# comentarios, etc. Este modelo se utiliza para registrar y mostrar el historial de 
-# actividades dentro de un proyecto, proporcionando contexto y trazabilidad para los 
+# comentarios, etc. Este modelo se utiliza para registrar y mostrar el historial de
+# actividades dentro de un proyecto, proporcionando contexto y trazabilidad para los
 # usuarios. Incluye información sobre el tipo de actividad, el usuario que la realizó,
 # la entidad afectada y un mensaje descriptivo de la actividad.
 
@@ -10,6 +10,7 @@ from datetime import UTC, datetime
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
+
 from app.db.base import Base
 
 

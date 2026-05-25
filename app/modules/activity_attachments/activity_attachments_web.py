@@ -7,13 +7,15 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Uplo
 from fastapi.responses import FileResponse, RedirectResponse
 from sqlalchemy.orm import Session
 
+from app.core.authorization.activity_permissions import ensure_can_view_activity
+from app.core.constants.actions import Actions
+from app.core.constants.resources import Resources
 from app.db.session import get_db
 from app.modules.activities.activity_model import Activity
-from app.modules.activity_attachments.activity_attachment_model import ActivityAttachment
+from app.modules.activity_attachments.activity_attachment_model import (
+    ActivityAttachment,
+)
 from app.modules.auth.auth_dependencies_web import require_permission_web
-from app.core.constants.resources import Resources
-from app.core.constants.actions import Actions
-from app.core.authorization.activity_permissions import ensure_can_view_activity
 from app.utils.flash import flash_success
 
 router = APIRouter(prefix="/activity-attachments", tags=["Activity Attachments"])
@@ -40,13 +42,11 @@ async def upload_attachment(
     ),
 ):
 
-    activity = db.query(Activity).filter(
-        Activity.id_activity == activity_id
-    ).first()
+    activity = db.query(Activity).filter(Activity.id_activity == activity_id).first()
 
     if not activity:
         raise HTTPException(status_code=404, detail="Actividad no encontrada")
-    
+
     ensure_can_view_activity(db, current_user, activity)
 
     if not file.filename:
@@ -88,10 +88,7 @@ async def upload_attachment(
     db.commit()
     db.refresh(attachment)
 
-    flash_success(
-        request,
-        "Archivo subido correctamente"
-    )
+    flash_success(request, "Archivo subido correctamente")
 
     print("SESSION DESPUÉS DE FLASH:", request.session)
 
@@ -116,13 +113,15 @@ def download_attachment(
     ),
 ):
 
-    attachment = db.query(ActivityAttachment).filter(
-        ActivityAttachment.id_attachment == attachment_id
-    ).first()
+    attachment = (
+        db.query(ActivityAttachment)
+        .filter(ActivityAttachment.id_attachment == attachment_id)
+        .first()
+    )
 
     if not attachment:
         raise HTTPException(status_code=404, detail="Adjunto no encontrado")
-    
+
     ensure_can_view_activity(db, current_user, attachment.activity)
 
     file_path = Path(attachment.file_path)
@@ -153,13 +152,15 @@ def delete_attachment(
     ),
 ):
 
-    attachment = db.query(ActivityAttachment).filter(
-        ActivityAttachment.id_attachment == attachment_id
-    ).first()
+    attachment = (
+        db.query(ActivityAttachment)
+        .filter(ActivityAttachment.id_attachment == attachment_id)
+        .first()
+    )
 
     if not attachment:
         raise HTTPException(status_code=404, detail="Adjunto no encontrado")
-    
+
     ensure_can_view_activity(db, current_user, attachment.activity)
 
     file_path = Path(attachment.file_path)
@@ -172,10 +173,7 @@ def delete_attachment(
     db.delete(attachment)
     db.commit()
 
-    flash_success(
-        request,
-        "Adjunto eliminado correctamente"
-    )
+    flash_success(request, "Adjunto eliminado correctamente")
 
     return RedirectResponse(
         f"/activities/{activity_id}",

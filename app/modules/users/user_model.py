@@ -24,28 +24,13 @@ class User(Base):
     # 🔑 CAMPOS
     # =========================================================
 
-    id_usuario = Column(
-        Integer,
-        primary_key=True,
-        index=True
-    )
+    id_usuario = Column(Integer, primary_key=True, index=True)
 
-    nombre = Column(
-        String(150),
-        nullable=False
-    )
+    nombre = Column(String(150), nullable=False)
 
-    activo = Column(
-        Boolean,
-        default=True,
-        nullable=False
-    )
+    activo = Column(Boolean, default=True, nullable=False)
 
-    fecha_creacion = Column(
-        DateTime,
-        default=lambda: datetime.now(UTC),
-        nullable=False
-    )
+    fecha_creacion = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
 
     # =========================================================
     # 🔗 RELACIONES
@@ -56,27 +41,19 @@ class User(Base):
         "Identity",
         back_populates="usuario",
         cascade="all, delete",
-        passive_deletes=True
+        passive_deletes=True,
     )
 
     # 🛡 Roles (RBAC many-to-many)
     roles = relationship(
-        "Role",
-        secondary=UserRole.__table__,
-        back_populates="usuarios"
+        "Role", secondary=UserRole.__table__, back_populates="usuarios"
     )
 
     # 🧾 Auditoría
-    audit_logs = relationship(
-        "AuditLog",
-        back_populates="user"
-    )
+    audit_logs = relationship("AuditLog", back_populates="user")
 
     # 🧑‍💻 Tareas asignadas
-    activities = relationship(
-        "Activity",
-        back_populates="user"
-    )
+    activities = relationship("Activity", back_populates="user")
 
     # Notificaciones
     notifications = relationship(
@@ -85,7 +62,7 @@ class User(Base):
         cascade="all, delete-orphan",
     )
 
-    #Adjuntos subidos por el usuario
+    # Adjuntos subidos por el usuario
     activity_attachments = relationship(
         "ActivityAttachment",
         back_populates="uploader",

@@ -1,9 +1,9 @@
 # tests/test_web_context.py
-# Este archivo contiene pruebas para el contexto global de las plantillas Jinja en 
-# la aplicación. Se verifica que el contexto se construya correctamente tanto en 
-# situaciones normales como en casos de error o ausencia de usuario. Se utilizan 
-# técnicas de monkeypatching para simular diferentes escenarios y validar que el 
-# contexto se comporte como se espera, incluyendo la generación de breadcrumbs y 
+# Este archivo contiene pruebas para el contexto global de las plantillas Jinja en
+# la aplicación. Se verifica que el contexto se construya correctamente tanto en
+# situaciones normales como en casos de error o ausencia de usuario. Se utilizan
+# técnicas de monkeypatching para simular diferentes escenarios y validar que el
+# contexto se comporte como se espera, incluyendo la generación de breadcrumbs y
 # la gestión de mensajes flash.
 
 from types import SimpleNamespace
@@ -17,6 +17,7 @@ from app.web.context import (
 # Helpers
 # =====================================================
 
+
 class DummyRequest:
     def __init__(self):
         self.state = SimpleNamespace()
@@ -27,6 +28,7 @@ class DummyRequest:
 # =====================================================
 # fallback directo
 # =====================================================
+
 
 def test_get_fallback_context():
     ctx = get_fallback_context()
@@ -41,6 +43,7 @@ def test_get_fallback_context():
 # sin usuario -> fallback
 # =====================================================
 
+
 def test_template_context_without_user():
     request = DummyRequest()
 
@@ -54,6 +57,7 @@ def test_template_context_without_user():
 # con usuario y sin db
 # =====================================================
 
+
 def test_template_context_user_without_db(monkeypatch):
     request = DummyRequest()
 
@@ -65,24 +69,16 @@ def test_template_context_user_without_db(monkeypatch):
     }
 
     monkeypatch.setattr(
-        "app.web.context.get_menu_structure",
-        lambda: [{"label": "Users"}]
+        "app.web.context.get_menu_structure", lambda: [{"label": "Users"}]
     )
 
     monkeypatch.setattr(
-        "app.web.context.filter_menu_by_permissions",
-        lambda menu, has_perm: menu
+        "app.web.context.filter_menu_by_permissions", lambda menu, has_perm: menu
     )
 
-    monkeypatch.setattr(
-        "app.web.context.mark_active_menu",
-        lambda menu, path: menu
-    )
+    monkeypatch.setattr("app.web.context.mark_active_menu", lambda menu, path: menu)
 
-    monkeypatch.setattr(
-        "app.web.context.get_flash",
-        lambda request: ["ok"]
-    )
+    monkeypatch.setattr("app.web.context.get_flash", lambda request: ["ok"])
 
     ctx = get_template_context(request)
 
@@ -101,6 +97,7 @@ def test_template_context_user_without_db(monkeypatch):
 # con db y breadcrumbs
 # =====================================================
 
+
 def test_template_context_with_db(monkeypatch):
     request = DummyRequest()
 
@@ -113,32 +110,20 @@ def test_template_context_with_db(monkeypatch):
 
     request.state.db = object()
 
-    monkeypatch.setattr(
-        "app.web.context.get_menu_structure",
-        lambda: []
-    )
+    monkeypatch.setattr("app.web.context.get_menu_structure", lambda: [])
 
     monkeypatch.setattr(
-        "app.web.context.filter_menu_by_permissions",
-        lambda menu, has_perm: menu
+        "app.web.context.filter_menu_by_permissions", lambda menu, has_perm: menu
     )
 
-    monkeypatch.setattr(
-        "app.web.context.mark_active_menu",
-        lambda menu, path: menu
-    )
+    monkeypatch.setattr("app.web.context.mark_active_menu", lambda menu, path: menu)
 
     monkeypatch.setattr(
         "app.web.context.build_smart_breadcrumbs",
-        lambda menu, request, db: [
-            {"label": "Dashboard"}
-        ]
+        lambda menu, request, db: [{"label": "Dashboard"}],
     )
 
-    monkeypatch.setattr(
-        "app.web.context.get_flash",
-        lambda request: []
-    )
+    monkeypatch.setattr("app.web.context.get_flash", lambda request: [])
 
     ctx = get_template_context(request)
 
@@ -151,14 +136,12 @@ def test_template_context_with_db(monkeypatch):
 # excepción interna -> fallback
 # =====================================================
 
+
 def test_template_context_exception(monkeypatch):
     request = DummyRequest()
     request.state.user = {"sub": "1"}
 
-    monkeypatch.setattr(
-        "app.web.context.get_menu_structure",
-        lambda: 1 / 0
-    )
+    monkeypatch.setattr("app.web.context.get_menu_structure", lambda: 1 / 0)
 
     ctx = get_template_context(request)
 

@@ -1,6 +1,7 @@
 # app/core/constants/resources.py
 # Constantes para recursos de autorización
 
+
 class Resources:
     USERS = "users"
     ROLES = "roles"

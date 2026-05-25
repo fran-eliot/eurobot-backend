@@ -1,7 +1,7 @@
 # tests/test_user_service_extra.py
 # Este archivo contiene pruebas adicionales para el servicio de usuarios,
-# incluyendo la obtención de roles de usuario, la verificación de acceso a usuarios, 
-# la eliminación de usuarios con auditoría, la obtención de registros de auditoría 
+# incluyendo la obtención de roles de usuario, la verificación de acceso a usuarios,
+# la eliminación de usuarios con auditoría, la obtención de registros de auditoría
 # de usuarios, y la explicación de permisos de usuario.
 
 
@@ -34,11 +34,12 @@ def test_get_user_roles(db):
 def test_can_access_user_owner(db):
     user = db.query(User).filter(User.nombre == "Admin Principal").first()
 
-    assert can_access_user(
-        current_user=user,
-        target_user=user,
-        required_permissions=["users:delete"]
-    ) is True
+    assert (
+        can_access_user(
+            current_user=user, target_user=user, required_permissions=["users:delete"]
+        )
+        is True
+    )
 
 
 def test_delete_user_with_audit(db):
@@ -49,10 +50,7 @@ def test_delete_user_with_audit(db):
     db.commit()
 
     delete_user_with_audit(
-        db,
-        target,
-        current_user=current_user,
-        request=DummyRequest()
+        db, target, current_user=current_user, request=DummyRequest()
     )
     db.commit()
 
@@ -68,10 +66,7 @@ def test_get_user_audit_logs(db):
     db.commit()
 
     delete_user_with_audit(
-        db,
-        target,
-        current_user=current_user,
-        request=DummyRequest()
+        db, target, current_user=current_user, request=DummyRequest()
     )
     db.commit()
 
@@ -118,11 +113,7 @@ def test_explain_user_permission_owner(db):
     db.add(user)
     db.commit()
 
-    result = explain_user_permission(
-        user=user,
-        action="view",
-        target=user
-    )
+    result = explain_user_permission(user=user, action="view", target=user)
 
     assert result["allowed"] is True
     assert result["reason"] == "owner"

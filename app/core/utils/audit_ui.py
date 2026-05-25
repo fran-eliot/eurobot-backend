@@ -1,7 +1,10 @@
 # app/core/utils/audit_ui.py
 # Utilidades para la interfaz de auditoría (iconos, etiquetas, etc.)
 
+
 def get_audit_icon(action: str) -> str:
+
+    action = action.upper()
 
     mapping = {
         # 👤 USERS
@@ -9,16 +12,13 @@ def get_audit_icon(action: str) -> str:
         "DELETE_USER": "fa-user-times",
         "ACTIVATE_USER": "fa-check",
         "DEACTIVATE_USER": "fa-ban",
-
         # 🔐 AUTH
         "LOGIN": "fa-sign-in-alt",
         "LOGOUT": "fa-sign-out-alt",
-
         # 📁 PROJECTS
         "CREATE_PROJECT": "fa-folder-plus",
         "UPDATE_PROJECT": "fa-folder-open",
         "DELETE_PROJECT": "fa-folder-minus",
-
         # ✅ TASKS
         "CREATE_TASK": "fa-plus-circle",
         "UPDATE_TASK": "fa-edit",
@@ -30,6 +30,13 @@ def get_audit_icon(action: str) -> str:
 
 
 def get_audit_color(action: str) -> str:
+    action = action.upper()
+
+    if "DEACTIVATE" in action:
+        return "bg-warning"
+        
+    if "ACTIVATE" in action:
+        return "bg-success"
 
     if "DELETE" in action:
         return "bg-danger"
@@ -38,7 +45,7 @@ def get_audit_color(action: str) -> str:
         return "bg-success"
 
     if "UPDATE" in action:
-        return "bg-primary"
+        return "bg-warning"
 
     if "STATUS" in action:
         return "bg-warning"
@@ -49,4 +56,4 @@ def get_audit_color(action: str) -> str:
     if "LOGOUT" in action:
         return "bg-secondary"
 
-    return "bg-info"
+    return "bg-primary"

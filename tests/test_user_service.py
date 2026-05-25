@@ -1,8 +1,8 @@
 # tests/test_user_service.py
 
-# Este archivo contiene pruebas para la funcionalidad del servicio de usuarios. 
-# Se definen pruebas para verificar que las funciones del servicio de usuarios 
-# funcionan correctamente, como la creación, actualización, búsqueda y sincronización 
+# Este archivo contiene pruebas para la funcionalidad del servicio de usuarios.
+# Se definen pruebas para verificar que las funciones del servicio de usuarios
+# funcionan correctamente, como la creación, actualización, búsqueda y sincronización
 # de roles de usuarios, así como la obtención de permisos y explicación de permisos.
 
 
@@ -70,10 +70,12 @@ def test_set_user_active_false(db):
 
 
 def test_search_users_text(db):
-    db.add_all([
-        User(nombre="Laura", activo=True),
-        User(nombre="Carlos", activo=True),
-    ])
+    db.add_all(
+        [
+            User(nombre="Laura", activo=True),
+            User(nombre="Carlos", activo=True),
+        ]
+    )
     db.commit()
 
     users, total = search_users(db, search="Lau")
@@ -83,10 +85,12 @@ def test_search_users_text(db):
 
 
 def test_search_users_active(db):
-    db.add_all([
-        User(nombre="Activo", activo=True),
-        User(nombre="Inactivo", activo=False),
-    ])
+    db.add_all(
+        [
+            User(nombre="Activo", activo=True),
+            User(nombre="Inactivo", activo=False),
+        ]
+    )
     db.commit()
 
     users, total = search_users(db, status="active")

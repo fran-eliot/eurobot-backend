@@ -1,7 +1,6 @@
 # tests/test_users_web_missing.py
-# Este archivo contiene pruebas para la funcionalidad de gestión de usuarios en la 
-# interfaz web.    
-
+# Este archivo contiene pruebas para la funcionalidad de gestión de usuarios en la
+# interfaz web.
 
 
 def fake_payload():
@@ -67,9 +66,7 @@ def test_users_list_filtered(client, monkeypatch):
     patch_auth(monkeypatch)
     login_client(client)
 
-    response = client.get(
-        "/users/?search=admin&status=active&page=1"
-    )
+    response = client.get("/users/?search=admin&status=active&page=1")
     assert response.status_code == 200
 
 

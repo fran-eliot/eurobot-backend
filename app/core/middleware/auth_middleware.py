@@ -16,8 +16,9 @@ PUBLIC_PATHS = [
     "/refresh",
     "/favicon.ico",
     "/static",
-    "/auth/saml"
+    "/auth/saml",
 ]
+
 
 def redirect_to_login():
     response = RedirectResponse("/login", status_code=302)
@@ -26,9 +27,7 @@ def redirect_to_login():
     return response
 
 
-
 class AuthMiddleware(BaseHTTPMiddleware):
-
     async def dispatch(self, request, call_next):
 
         path = request.url.path
@@ -57,7 +56,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
             return await call_next(request)
 
-        except (JWTError,HTTPException) as e:
+        except (JWTError, HTTPException) as e:
             print(f"Error al validar el token: {e}")
             # 🔴 4. Intentar refresh automático
             refresh_token = request.cookies.get("refresh_token")
@@ -86,11 +85,11 @@ class AuthMiddleware(BaseHTTPMiddleware):
                     httponly=True,
                     samesite="lax",
                     secure=False,  # Cambiar a True en producción
-                    path="/"
+                    path="/",
                 )
 
                 return response
 
-            except (JWTError,HTTPException) as e:
+            except (JWTError, HTTPException) as e:
                 print(f"Error al refrescar el token: {e}")
                 return redirect_to_login()

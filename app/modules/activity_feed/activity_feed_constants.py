@@ -6,6 +6,7 @@
 # y en los feeds de actividad de los proyectos, facilitando la comprensión y seguimiento
 # de las acciones realizadas por los usuarios dentro de la plataforma.
 
+
 class FeedEvent:
     TASK_CREATED = "TASK_CREATED"
     TASK_UPDATED = "TASK_UPDATED"

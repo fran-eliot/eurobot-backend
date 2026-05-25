@@ -1,36 +1,35 @@
 # app/modules/tasks/tasks_web.py
 
 # 📋 Rutas web relacionadas con tareas: estas rutas manejan la creación, edición,
-# eliminación y visualización de tareas a través de formularios HTML. Incluyen 
-# validación, control de permisos utilizando las funciones definidas en 
-# project_permissions.py, y también emiten eventos a través de WebSockets para 
-# notificar a los usuarios en tiempo real cuando se crean o actualizan tareas, 
+# eliminación y visualización de tareas a través de formularios HTML. Incluyen
+# validación, control de permisos utilizando las funciones definidas en
+# project_permissions.py, y también emiten eventos a través de WebSockets para
+# notificar a los usuarios en tiempo real cuando se crean o actualizan tareas,
 # mejorando la experiencia de usuario sin necesidad de refrescar la página.
 
 
-from fastapi import APIRouter, Depends, Request, Form, HTTPException
-from fastapi.responses import RedirectResponse, HTMLResponse
+from fastapi import APIRouter, Depends, Form, HTTPException, Request
+from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.authorization.policies import can_user_action
 from app.core.authorization.task_permissions import ensure_can_view_task
-from app.core.websockets import manager
-from app.db.session import get_db
-from app.core.render import render
-from app.modules.audit.audit_model import AuditLog
-from app.modules.projects.project_member_model import ProjectMember
-from app.modules.tasks.task_service import change_task_status_with_audit, create_task_with_audit, delete_task_with_audit, update_task_with_audit
-
-from app.modules.auth.auth_dependencies_web import require_permission_web
-from app.core.constants.resources import Resources
 from app.core.constants.actions import Actions
-
-from app.modules.tasks.task_model import Task, TaskStatusEnum
+from app.core.constants.resources import Resources
+from app.core.render import render
+from app.db.session import get_db
+from app.modules.auth.auth_dependencies_web import require_permission_web
+from app.modules.projects.project_member_model import ProjectMember
 from app.modules.projects.project_model import Project
-from app.modules.tasks.task_view_service import build_task_detail_view
-from app.modules.users.user_model import User
 from app.modules.projects.projects_service import get_available_users
-
+from app.modules.tasks.task_model import Task
+from app.modules.tasks.task_service import (
+    change_task_status_with_audit,
+    create_task_with_audit,
+    delete_task_with_audit,
+    update_task_with_audit,
+)
+from app.modules.tasks.task_view_service import build_task_detail_view
 
 router = APIRouter(prefix="/tasks", tags=["Tasks Web"])
 
@@ -52,27 +51,19 @@ def tasks_list(
 
     query = db.query(Task)
 
-    roles = [
-        r.nombre.lower()
-        for r in getattr(current_user, "roles", [])
-    ]
+    roles = [r.nombre.lower() for r in getattr(current_user, "roles", [])]
 
     # =========================================================
     # 🔐 FILTRADO POR CONTEXTO
     # =========================================================
 
     if "admin" not in roles:
-
         # 👨‍🎓 estudiante → solo sus tareas
         if "estudiante" in roles:
-
-            query = query.filter(
-                Task.assigned_to == current_user.id_usuario
-            )
+            query = query.filter(Task.assigned_to == current_user.id_usuario)
 
         # 👨‍🏫 profesor/coordinator → tareas de proyectos donde participa
         else:
-
             project_ids = [
                 row[0]
                 for row in db.query(ProjectMember.project_id)
@@ -80,9 +71,7 @@ def tasks_list(
                 .all()
             ]
 
-            query = query.filter(
-                Task.project_id.in_(project_ids)
-            )
+            query = query.filter(Task.project_id.in_(project_ids))
 
     if search:
         query = query.filter(Task.name.ilike(f"%{search}%"))
@@ -105,11 +94,9 @@ def tasks_list(
     total_pages = (total + per_page - 1) // per_page
 
     if "admin" in roles:
-
         projects = db.query(Project).all()
 
     else:
-
         project_ids = [
             row[0]
             for row in db.query(ProjectMember.project_id)
@@ -117,11 +104,7 @@ def tasks_list(
             .all()
         ]
 
-        projects = (
-            db.query(Project)
-            .filter(Project.id_project.in_(project_ids))
-            .all()
-        )
+        projects = db.query(Project).filter(Project.id_project.in_(project_ids)).all()
 
     pending_count = query.filter(Task.status == "todo").count()
     progress_count = query.filter(Task.status == "doing").count()
@@ -155,17 +138,12 @@ def task_create_form(
     db: Session = Depends(get_db),
     current_user=Depends(require_permission_web(Resources.TASKS, Actions.CREATE)),
 ):
-    roles = [
-        r.nombre.lower()
-        for r in getattr(current_user, "roles", [])
-    ]
+    roles = [r.nombre.lower() for r in getattr(current_user, "roles", [])]
 
     if "admin" in roles:
-
         projects = db.query(Project).all()
 
     else:
-
         project_ids = [
             row[0]
             for row in db.query(ProjectMember.project_id)
@@ -173,11 +151,7 @@ def task_create_form(
             .all()
         ]
 
-        projects = (
-            db.query(Project)
-            .filter(Project.id_project.in_(project_ids))
-            .all()
-        )
+        projects = db.query(Project).filter(Project.id_project.in_(project_ids)).all()
 
     users = []
 
@@ -207,7 +181,7 @@ def task_edit_form(
 
     if not task:
         raise HTTPException(404, "Tarea no encontrada")
-    
+
     ensure_can_view_task(
         db,
         current_user,
@@ -216,17 +190,12 @@ def task_edit_form(
 
     available_users = get_available_users(db, task.project_id)
 
-    roles = [
-        r.nombre.lower()
-        for r in getattr(current_user, "roles", [])
-    ]
+    roles = [r.nombre.lower() for r in getattr(current_user, "roles", [])]
 
     if "admin" in roles:
-
         projects = db.query(Project).all()
 
     else:
-
         project_ids = [
             row[0]
             for row in db.query(ProjectMember.project_id)
@@ -234,11 +203,7 @@ def task_edit_form(
             .all()
         ]
 
-        projects = (
-            db.query(Project)
-            .filter(Project.id_project.in_(project_ids))
-            .all()
-        )
+        projects = db.query(Project).filter(Project.id_project.in_(project_ids)).all()
 
     users = available_users
 
@@ -276,7 +241,7 @@ def task_create(
 
     if not can_user_action(Actions.CREATE, Resources.TASKS, current_user, project):
         raise HTTPException(403, "No autorizado")
-    
+
     if assigned_to:
         is_member = (
             db.query(ProjectMember)
@@ -302,7 +267,7 @@ def task_create(
         description=description,
         assigned_to=assigned_to,
         status=status,
-        priority=priority
+        priority=priority,
     )
 
     db.commit()
@@ -330,7 +295,7 @@ def task_update(
 
     if not task:
         raise HTTPException(404, "Tarea no encontrada")
-    
+
     ensure_can_view_task(
         db,
         current_user,
@@ -339,7 +304,7 @@ def task_update(
 
     if not can_user_action(Actions.UPDATE, Resources.TASKS, current_user, task):
         raise HTTPException(403, "No autorizado")
-    
+
     if assigned_to:
         is_member = (
             db.query(ProjectMember)
@@ -355,7 +320,7 @@ def task_update(
                 status_code=403,
                 detail="El usuario asignado no pertenece al proyecto",
             )
-    
+
     task = update_task_with_audit(
         db,
         task,
@@ -365,10 +330,10 @@ def task_update(
             "project_id": project_id,
             "assigned_to": assigned_to,
             "status": status,
-            "priority": priority
+            "priority": priority,
         },
         current_user,
-        request
+        request,
     )
 
     db.commit()
@@ -386,7 +351,7 @@ def task_detail(
     db: Session = Depends(get_db),
     current_user=Depends(require_permission_web(Resources.TASKS, Actions.READ)),
 ):
-    
+
     task = db.query(Task).get(task_id)
 
     if not task:
@@ -398,7 +363,7 @@ def task_detail(
         task,
     )
 
-    context = build_task_detail_view(db, task_id,current_user)
+    context = build_task_detail_view(db, task_id, current_user)
 
     return render(
         request,
@@ -421,7 +386,7 @@ def task_delete(
 
     if not task:
         raise HTTPException(404, "Tarea no encontrada")
-    
+
     ensure_can_view_task(
         db,
         current_user,
@@ -430,7 +395,7 @@ def task_delete(
 
     if not can_user_action(Actions.DELETE, Resources.TASKS, current_user, task):
         raise HTTPException(403, "No autorizado")
-    
+
     delete_task_with_audit(db, task, current_user, request)
     db.commit()
 
@@ -452,20 +417,14 @@ def change_task_status(
 
     if not task:
         raise HTTPException(404, "Tarea no encontrada")
-    
+
     ensure_can_view_task(
         db,
         current_user,
         task,
     )
 
-    change_task_status_with_audit(
-        db,
-        task,
-        new_status,
-        current_user,
-        request
-    )
+    change_task_status_with_audit(db, task, new_status, current_user, request)
 
     db.commit()
 

@@ -28,20 +28,20 @@ class UserRole(Base):
         Integer,
         ForeignKey(
             "usuarios.id_usuario",
-            ondelete="CASCADE"  # si se elimina usuario → borra relaciones
+            ondelete="CASCADE",  # si se elimina usuario → borra relaciones
         ),
         primary_key=True,
-        index=True
+        index=True,
     )
 
     rol_id = Column(
         Integer,
         ForeignKey(
             "roles.id_rol",
-            ondelete="CASCADE"  # si se elimina rol → borra relaciones
+            ondelete="CASCADE",  # si se elimina rol → borra relaciones
         ),
         primary_key=True,
-        index=True
+        index=True,
     )
 
     # =========================================================

@@ -15,10 +15,7 @@ from app.core.authorization.role_permissions import ROLE_PERMISSIONS
 
 
 def test_has_permission_ok():
-    assert has_permission(
-        ["Users:Read", "roles:update"],
-        ["users:read"]
-    ) is True
+    assert has_permission(["Users:Read", "roles:update"], ["users:read"]) is True
 
 
 def test_has_permission_fail_empty():
@@ -26,10 +23,7 @@ def test_has_permission_fail_empty():
 
 
 def test_has_permission_any_match():
-    assert has_permission(
-        ["roles:read"],
-        ["users:read", "roles:read"]
-    ) is True
+    assert has_permission(["roles:read"], ["users:read", "roles:read"]) is True
 
 
 def test_has_permission_from_roles_admin():
@@ -54,10 +48,7 @@ def test_has_permission_from_roles_match():
 
 
 def test_has_permission_from_roles_fail():
-    assert has_permission_from_roles(
-        ["student"],
-        ["users:delete"]
-    ) is False
+    assert has_permission_from_roles(["student"], ["users:delete"]) is False
 
 
 def test_get_permissions_from_roles_empty():
@@ -92,16 +83,10 @@ def test_can_access_resource_owner():
 
 
 def test_can_access_resource_by_permission():
-    user = SimpleNamespace(
-        id_usuario=2,
-        permissions=["users:read"]
-    )
+    user = SimpleNamespace(id_usuario=2, permissions=["users:read"])
     assert can_access_resource(user, 1, ["users:read"]) is True
 
 
 def test_can_access_resource_denied():
-    user = SimpleNamespace(
-        id_usuario=2,
-        permissions=["dashboard:read"]
-    )
+    user = SimpleNamespace(id_usuario=2, permissions=["dashboard:read"])
     assert can_access_resource(user, 1, ["users:read"]) is False

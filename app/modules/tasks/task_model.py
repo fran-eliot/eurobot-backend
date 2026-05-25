@@ -8,22 +8,25 @@
 
 
 import enum
+from datetime import UTC, datetime
 
-from sqlalchemy import Column, Enum, Integer, String, Text, Date, DateTime, ForeignKey
+from sqlalchemy import Column, Date, DateTime, Enum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
-from datetime import datetime, UTC
 
 from app.db.base import Base
 
-class TaskStatusEnum(str, enum.Enum):
+
+class TaskStatusEnum(enum.StrEnum):
     todo = "todo"
     doing = "doing"
     done = "done"
 
-class TaskPriorityEnum(str, enum.Enum):
+
+class TaskPriorityEnum(enum.StrEnum):
     low = "low"
     medium = "medium"
     high = "high"
+
 
 class Task(Base):
     __tablename__ = "tasks"
@@ -31,55 +34,33 @@ class Task(Base):
     id_task = Column(Integer, primary_key=True, index=True)
 
     project_id = Column(
-        Integer,
-        ForeignKey("projects.id_project", ondelete="CASCADE"),
-        nullable=False
+        Integer, ForeignKey("projects.id_project", ondelete="CASCADE"), nullable=False
     )
 
     name = Column(String(150), nullable=False)
     description = Column(Text, nullable=True)
 
-    status = Column(
-        Enum(TaskStatusEnum),
-        default=TaskStatusEnum.todo,
-        nullable=False
-    )
+    status = Column(Enum(TaskStatusEnum), default=TaskStatusEnum.todo, nullable=False)
 
     priority = Column(
-        Enum(TaskPriorityEnum),
-        default=TaskPriorityEnum.medium,
-        nullable=False
+        Enum(TaskPriorityEnum), default=TaskPriorityEnum.medium, nullable=False
     )
 
-    assigned_to = Column(
-        Integer,
-        ForeignKey("usuarios.id_usuario"),
-        nullable=True
-    )
+    assigned_to = Column(Integer, ForeignKey("usuarios.id_usuario"), nullable=True)
 
-    created_by = Column(
-        Integer,
-        ForeignKey("usuarios.id_usuario"),
-        nullable=False
-    )
+    created_by = Column(Integer, ForeignKey("usuarios.id_usuario"), nullable=False)
 
     due_date = Column(Date, nullable=True)
 
-    created_at = Column(
-        DateTime,
-        default=datetime.now(UTC),
-        nullable=False
-    )
+    created_at = Column(DateTime, default=datetime.now(UTC), nullable=False)
 
     # Relaciones
     project = relationship("Project", back_populates="tasks")
 
-    assignee = relationship("User",foreign_keys=[assigned_to])
+    assignee = relationship("User", foreign_keys=[assigned_to])
 
     activities = relationship(
-        "Activity",
-        back_populates="task",
-        cascade="all, delete-orphan"
+        "Activity", back_populates="task", cascade="all, delete-orphan"
     )
 
     def __repr__(self):

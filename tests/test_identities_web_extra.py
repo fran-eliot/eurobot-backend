@@ -4,6 +4,7 @@ from tests.test_utils import login_admin
 # LISTADO - FILTROS Y PAGINACIÓN
 # =========================================================
 
+
 def test_identities_list_search(client):
     login_admin(client)
 
@@ -42,6 +43,7 @@ def test_identities_list_page_2(client):
 # FORMULARIOS
 # =========================================================
 
+
 def test_identity_form_create(client):
     login_admin(client)
 
@@ -64,6 +66,7 @@ def test_identity_form_edit(client):
 # DETAIL
 # =========================================================
 
+
 def test_identity_detail_ok(client):
     login_admin(client)
 
@@ -85,6 +88,7 @@ def test_identity_detail_404(client):
 # UPDATE CON PASSWORD NUEVA
 # =========================================================
 
+
 def test_identity_edit_with_password(client):
     login_admin(client)
 
@@ -93,9 +97,9 @@ def test_identity_edit_with_password(client):
         data={
             "email": "admin1_updated@robotica.es",
             "password": "nueva1234",
-            "user_id": 1
+            "user_id": 1,
         },
-        follow_redirects=False
+        follow_redirects=False,
     )
 
     assert response.status_code in (302, 303)
@@ -106,13 +110,11 @@ def test_identity_edit_with_password(client):
 # DELETE NO EXISTE
 # =========================================================
 
+
 def test_identity_delete_not_found(client):
     login_admin(client)
 
-    response = client.post(
-        "/identities/999/delete",
-        follow_redirects=False
-    )
+    response = client.post("/identities/999/delete", follow_redirects=False)
 
     assert response.status_code in (302, 303)
     assert response.headers["location"] == "/identities/"

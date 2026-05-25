@@ -18,30 +18,19 @@ def build_user_detail_view(db, user_id):
     return {
         "user": user,
         "roles": get_all_roles(db),
-
         # 🔐 permisos
         "permissions": get_user_permissions(user),
         "permissions_by_role": get_user_permissions_by_role(user),
         "permissions_with_origin": get_user_permissions_with_origin(user),
-
         # 🔍 explainable RBAC
         "permission_checks": [
-            {
-                "action": "view",
-                "result": explain_user_permission(user, "view", user)
-            },
-            {
-                "action": "edit",
-                "result": explain_user_permission(user, "edit", user)
-            },
+            {"action": "view", "result": explain_user_permission(user, "view", user)},
+            {"action": "edit", "result": explain_user_permission(user, "edit", user)},
             {
                 "action": "delete",
-                "result": explain_user_permission(user, "delete", user)
-            }
+                "result": explain_user_permission(user, "delete", user),
+            },
         ],
-
         # 📜 auditoría
-        "audit_logs": get_user_audit_logs(db, user_id, limit=20)
+        "audit_logs": get_user_audit_logs(db, user_id, limit=20),
     }
-
-

@@ -13,8 +13,8 @@ class LoginRequest(BaseModel):
         ...,
         json_schema_extra={
             "example": "laura_admin@eurobot.es",
-            "description": "Email del usuario"
-        }
+            "description": "Email del usuario",
+        },
     )
 
     password: str = Field(
@@ -22,8 +22,8 @@ class LoginRequest(BaseModel):
         min_length=4,
         json_schema_extra={
             "example": "123456",
-            "description": "Contraseña del usuario"
-        }
+            "description": "Contraseña del usuario",
+        },
     )
 
     # =========================================================

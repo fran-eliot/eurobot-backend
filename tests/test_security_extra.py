@@ -1,7 +1,7 @@
 # tests/test_security_extra.py
-# Este archivo contiene pruebas adicionales para la funcionalidad de seguridad, 
-# específicamente para validar que los tokens de acceso y refresh sean del tipo 
-# correcto. Se verifica que si se intenta validar un token con el tipo incorrecto, 
+# Este archivo contiene pruebas adicionales para la funcionalidad de seguridad,
+# específicamente para validar que los tokens de acceso y refresh sean del tipo
+# correcto. Se verifica que si se intenta validar un token con el tipo incorrecto,
 # se lance una excepción HTTP 401 con el mensaje adecuado.
 
 import pytest

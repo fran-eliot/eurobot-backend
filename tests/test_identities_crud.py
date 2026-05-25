@@ -15,12 +15,8 @@ def test_create_identity(client):
 
     response = client.post(
         "/identities/form",
-        data={
-            "email": "nuevo@robotica.es",
-            "password": "1234",
-            "user_id": 1
-        },
-        follow_redirects=False
+        data={"email": "nuevo@robotica.es", "password": "1234", "user_id": 1},
+        follow_redirects=False,
     )
 
     assert response.status_code in (302, 303)
@@ -33,12 +29,8 @@ def test_edit_identity(client):
     # Crear primero
     create = client.post(
         "/identities/form",
-        data={
-            "email": "editar@robotica.es",
-            "password": "1234",
-            "user_id": 1
-        },
-        follow_redirects=False
+        data={"email": "editar@robotica.es", "password": "1234", "user_id": 1},
+        follow_redirects=False,
     )
 
     assert create.status_code in (302, 303)
@@ -52,12 +44,8 @@ def test_edit_identity(client):
 
     update = client.post(
         f"/identities/{identity_id}/edit",
-        data={
-            "email": "editado@robotica.es",
-            "password": "",
-            "user_id": 1
-        },
-        follow_redirects=False
+        data={"email": "editado@robotica.es", "password": "", "user_id": 1},
+        follow_redirects=False,
     )
 
     assert update.status_code in (302, 303)
@@ -69,20 +57,13 @@ def test_delete_identity(client):
     # Crear identity a borrar
     client.post(
         "/identities/form",
-        data={
-            "email": "borrar@robotica.es",
-            "password": "1234",
-            "user_id": 1
-        },
-        follow_redirects=False
+        data={"email": "borrar@robotica.es", "password": "1234", "user_id": 1},
+        follow_redirects=False,
     )
 
     identity_id = 4
 
-    response = client.post(
-        f"/identities/{identity_id}/delete",
-        follow_redirects=False
-    )
+    response = client.post(f"/identities/{identity_id}/delete", follow_redirects=False)
 
     assert response.status_code in (302, 303)
     assert response.headers["location"] == "/identities/"
@@ -94,11 +75,11 @@ def test_duplicate_email_identity(client):
     response = client.post(
         "/identities/form",
         data={
-            "email": "admin1@robotica.es",   # ya existe en seed
+            "email": "admin1@robotica.es",  # ya existe en seed
             "password": "1234",
-            "user_id": 1
+            "user_id": 1,
         },
-        follow_redirects=False
+        follow_redirects=False,
     )
 
     assert response.status_code in (302, 303)

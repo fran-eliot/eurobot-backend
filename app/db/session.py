@@ -9,15 +9,12 @@ from app.core.config import settings
 engine = create_engine(
     settings.DATABASE_URL,
     echo=True,  # True en desarrollo, False en producción
-    pool_pre_ping=True
+    pool_pre_ping=True,
 )
 
 # Crear fábrica de sesiones
-SessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine
-)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
 
 # Dependency para FastAPI
 def get_db():

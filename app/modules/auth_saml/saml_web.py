@@ -16,6 +16,7 @@ from app.utils.flash import flash_error
 
 router = APIRouter(prefix="/auth/saml", tags=["SAML"])
 
+
 @router.get("/login")
 def saml_login(request: Request):
     auth = get_saml_auth(request, get_saml_settings())
@@ -25,15 +26,10 @@ def saml_login(request: Request):
 @router.get("/mock")
 def mock_login(db: Session = Depends(get_db)):
 
-    identity = db.query(Identity).filter(
-        Identity.email == "user_uah@uah.es"
-    ).first()
+    identity = db.query(Identity).filter(Identity.email == "user_uah@uah.es").first()
 
     if not identity:
-        raise HTTPException(
-            status_code=404,
-            detail="Usuario demo UAH no encontrado"
-        )
+        raise HTTPException(status_code=404, detail="Usuario demo UAH no encontrado")
 
     user = identity.usuario
 
@@ -42,12 +38,7 @@ def mock_login(db: Session = Depends(get_db)):
 
     response = RedirectResponse("/dashboard", status_code=302)
 
-    response.set_cookie(
-        "access_token",
-        token,
-        httponly=True,
-        samesite="lax"
-    )
+    response.set_cookie("access_token", token, httponly=True, samesite="lax")
 
     return response
 
@@ -55,20 +46,19 @@ def mock_login(db: Session = Depends(get_db)):
 @router.get("/metadata")
 def metadata():
     auth = get_saml_auth
-    print("Obteniendo metadata SAML con settings:",auth)
+    print("Obteniendo metadata SAML con settings:", auth)
     settings = get_saml_settings()
 
     from onelogin.saml2.settings import OneLogin_Saml2_Settings
+
     saml_settings = OneLogin_Saml2_Settings(settings)
 
     metadata = saml_settings.get_sp_metadata()
     return Response(content=metadata, media_type="text/xml")
 
+
 @router.post("/acs")
-def acs(
-    request: Request,
-    db: Session = Depends(get_db)
-):
+def acs(request: Request, db: Session = Depends(get_db)):
     auth = get_saml_auth(request, get_saml_settings())
 
     auth.process_response()
@@ -87,17 +77,12 @@ def acs(
     email = attrs.get("mail", [""])[0]
     name = attrs.get("displayName", [email])[0]
 
-    identity = db.query(Identity).filter(
-        Identity.email == email
-    ).first()
+    identity = db.query(Identity).filter(Identity.email == email).first()
 
     if identity:
         user = identity.usuario
     else:
-        user = User(
-            nombre=name,
-            activo=True
-        )
+        user = User(nombre=name, activo=True)
         db.add(user)
         db.flush()
 
@@ -105,7 +90,7 @@ def acs(
             email=email,
             provider="uah_saml",
             user_id=user.id_usuario,
-            password_hash=None
+            password_hash=None,
         )
         db.add(identity)
         db.commit()
@@ -116,12 +101,6 @@ def acs(
 
     response = RedirectResponse("/dashboard", status_code=302)
 
-    response.set_cookie(
-        "access_token",
-        token,
-        httponly=True,
-        samesite="lax"
-    )
+    response.set_cookie("access_token", token, httponly=True, samesite="lax")
 
     return response
-

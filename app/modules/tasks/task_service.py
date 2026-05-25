@@ -2,22 +2,23 @@
 # 📋 Servicio de tareas: lógica de negocio relacionada con las tareas, incluyendo
 # la creación, actualización y gestión de tareas dentro de los proyectos. Este servicio
 # se encarga de validar permisos, manejar la asignación de tareas a usuarios y asegurar
-# que las operaciones relacionadas con las tareas se realicen de manera consistente y 
+# que las operaciones relacionadas con las tareas se realicen de manera consistente y
 # segura.
 
 from datetime import UTC, datetime
 
 from sqlalchemy.orm import Session
+
+from app.core.authorization.project_permissions import can_manage_tasks
 from app.core.constants.audit_actions import AuditAction
 from app.core.websockets.utils import emit_project_event
 from app.modules.activity_feed.activity_feed_constants import FeedEvent
 from app.modules.activity_feed.activity_feed_service import create_feed_event
 from app.modules.audit.audit_service import log_action
-from app.modules.tasks.task_model import Task, TaskStatusEnum
-from app.modules.projects.project_model import Project
-from app.core.authorization.project_permissions import can_manage_tasks
 from app.modules.notifications.notification_constants import NotificationType
 from app.modules.notifications.notification_service import create_notification
+from app.modules.projects.project_model import Project
+from app.modules.tasks.task_model import Task, TaskStatusEnum
 
 
 def create_task(
@@ -26,7 +27,7 @@ def create_task(
     project_id: int,
     name: str,
     description: str,
-    assigned_to: int | None
+    assigned_to: int | None,
 ):
     project = db.query(Project).filter_by(id_project=project_id).first()
 
@@ -41,7 +42,7 @@ def create_task(
         name=name,
         description=description,
         assigned_to=assigned_to,
-        created_by=user.id_usuario
+        created_by=user.id_usuario,
     )
 
     db.add(task)
@@ -51,12 +52,7 @@ def create_task(
     return task
 
 
-def update_task_status(
-    db: Session,
-    user,
-    task_id: int,
-    new_status: str
-):
+def update_task_status(db: Session, user, task_id: int, new_status: str):
     task = db.query(Task).filter_by(id_task=task_id).first()
 
     if not task:
@@ -82,7 +78,7 @@ def create_task_with_audit(
     description="",
     assigned_to=None,
     status="todo",
-    priority="medium"
+    priority="medium",
 ):
 
     task = Task(
@@ -92,7 +88,7 @@ def create_task_with_audit(
         assigned_to=assigned_to,
         status=status,
         priority=priority,
-        created_by=current_user.id_usuario if current_user else None
+        created_by=current_user.id_usuario if current_user else None,
     )
 
     db.add(task)
@@ -106,32 +102,38 @@ def create_task_with_audit(
             resource_type="task",
             resource_id=task.id_task,
             description=f"Creó tarea '{task.name}'",
-            request=request
+            request=request,
         )
 
-        payload={
-                    "type": "audit",
-                    "action": AuditAction.CREATE_TASK,
-                    "description": f"Creó tarea '<strong>{task.name}</strong>'",
-                    "user": current_user.nombre,
-                    "user_id": current_user.id_usuario,
-                    "created_at": datetime.now(UTC).isoformat()
-                }
+        payload = {
+            "type": "audit",
+            "action": AuditAction.CREATE_TASK,
+            "description": f"Creó tarea '<strong>{task.name}</strong>'",
+            "user": current_user.nombre,
+            "user_id": current_user.id_usuario,
+            "created_at": datetime.now(UTC).isoformat(),
+        }
 
-        emit_project_event(
-            project_id, payload)
-        
+        emit_project_event(project_id, payload)
+
         create_feed_event(
             db=db,
             project_id=task.project_id,
             user=current_user,
             event_type=FeedEvent.TASK_CREATED,
-            message=f"{current_user.nombre} creó la tarea '<strong>{task.name}</strong>'",
+            message=(
+                f"{current_user.nombre} creó la tarea "
+                f"'<strong>{task.name}</strong>'"
+            ),
             entity_type="task",
-            entity_id=task.id_task
+            entity_id=task.id_task,
         )
 
-        if task.assigned_to and current_user and task.assigned_to != current_user.id_usuario:
+        if (
+            task.assigned_to
+            and current_user
+            and task.assigned_to != current_user.id_usuario
+        ):
             create_notification(
                 db=db,
                 user_id=task.assigned_to,
@@ -147,23 +149,19 @@ def create_task_with_audit(
 
 
 def change_task_status_with_audit(
-    db,
-    task,
-    new_status,
-    current_user=None,
-    request=None
+    db, task, new_status, current_user=None, request=None
 ):
-    
+
     try:
         new_status_enum = TaskStatusEnum(new_status)
     except ValueError:
         raise ValueError("Estado inválido")
-    
+
     old_status = task.status
 
     if old_status == new_status_enum:
         return task
-    
+
     task.status = new_status_enum
 
     if current_user and request:
@@ -178,26 +176,24 @@ def change_task_status_with_audit(
                 f"<strong>{old_status.value}</strong> → "
                 f"<strong>{new_status_enum.value}</strong>"
             ),
-            request=request
+            request=request,
         )
 
         # 🔥 emitir evento SIN bloquear
 
-        payload={
-                    "type": "audit",            
-                    "action": AuditAction.UPDATE_TASK,
-                    "description": (
-                        f"Cambió estado: "
-                        f"<strong>{old_status.value}</strong> → "
-                        f"<strong>{new_status_enum.value}</strong>"
-                    ),
-                    "user": current_user.nombre,
-                    "user_id": current_user.id_usuario,
-                    "created_at": datetime.now(UTC).isoformat()
-                }
-        emit_project_event(
-            project_id=task.project_id, payload=payload
-        )
+        payload = {
+            "type": "audit",
+            "action": AuditAction.UPDATE_TASK,
+            "description": (
+                f"Cambió estado: "
+                f"<strong>{old_status.value}</strong> → "
+                f"<strong>{new_status_enum.value}</strong>"
+            ),
+            "user": current_user.nombre,
+            "user_id": current_user.id_usuario,
+            "created_at": datetime.now(UTC).isoformat(),
+        }
+        emit_project_event(project_id=task.project_id, payload=payload)
 
         # 📢 evento específico de cambio de estado para feed de actividad
         create_feed_event(
@@ -211,10 +207,14 @@ def change_task_status_with_audit(
                 f"<strong>{new_status_enum.value}</strong>"
             ),
             entity_type="task",
-            entity_id=task.id_task
+            entity_id=task.id_task,
         )
 
-        if task.assigned_to and current_user and task.assigned_to != current_user.id_usuario:
+        if (
+            task.assigned_to
+            and current_user
+            and task.assigned_to != current_user.id_usuario
+        ):
             create_notification(
                 db=db,
                 user_id=task.assigned_to,
@@ -227,7 +227,7 @@ def change_task_status_with_audit(
             )
 
         return task
-        
+
 
 def delete_task_with_audit(db, task, current_user=None, request=None):
 
@@ -243,26 +243,27 @@ def delete_task_with_audit(db, task, current_user=None, request=None):
             resource_type="task",
             resource_id=task.id_task,
             description=f"Eliminó tarea '<strong>{task.name}</strong>'",
-            request=request
+            request=request,
         )
-        payload={
-                    "type": "audit",
-                    "action": AuditAction.DELETE_TASK,
-                    "description": f"Eliminó tarea '<strong>{task.name}</strong>'",
-                    "user": current_user.nombre,
-                    "user_id": current_user.id_usuario,
-                    "created_at": datetime.now(UTC).isoformat()
-                }
-        emit_project_event(
-            project_id=task.project_id, payload=payload 
-            )
-        
+        payload = {
+            "type": "audit",
+            "action": AuditAction.DELETE_TASK,
+            "description": f"Eliminó tarea '<strong>{task.name}</strong>'",
+            "user": current_user.nombre,
+            "user_id": current_user.id_usuario,
+            "created_at": datetime.now(UTC).isoformat(),
+        }
+        emit_project_event(project_id=task.project_id, payload=payload)
+
         create_feed_event(
             db=db,
             project_id=project_id,
             user=current_user,
             event_type=FeedEvent.TASK_DELETED,
-            message=f"{current_user.nombre} eliminó la tarea '<strong>{task_name}</strong>'",
+            message=(
+                f"{current_user.nombre} eliminó la tarea "
+                f"'<strong>{task_name}</strong>'"
+            ),
             entity_type="task",
             entity_id=task_id,
         )
@@ -274,13 +275,7 @@ def normalize(value):
     return value or ""
 
 
-def update_task_with_audit(
-    db,
-    task,
-    data: dict,
-    current_user=None,
-    request=None
-):
+def update_task_with_audit(db, task, data: dict, current_user=None, request=None):
     """
     Actualiza una task y registra auditoría de cambios.
     """
@@ -294,7 +289,7 @@ def update_task_with_audit(
         "project_id": "Proyecto",
         "assigned_to": "Asignado a",
         "status": "Estado",
-        "priority": "Prioridad"
+        "priority": "Prioridad",
     }
 
     changes = []
@@ -312,7 +307,7 @@ def update_task_with_audit(
 
     if not changes:
         return task
-    
+
     # =========================
     # Guardar
     # =========================
@@ -333,26 +328,27 @@ def update_task_with_audit(
             resource_type="task",
             resource_id=task.id_task,
             description=description,
-            request=request
+            request=request,
         )
-        payload={
-                    "type": "audit",
-                    "action": AuditAction.UPDATE_TASK,
-                    "description": description,
-                    "user": current_user.nombre,
-                    "user_id": current_user.id_usuario,
-                    "created_at": datetime.now(UTC).isoformat()
-                }
-        emit_project_event(
-            project_id=task.project_id, payload=payload
-        )
+        payload = {
+            "type": "audit",
+            "action": AuditAction.UPDATE_TASK,
+            "description": description,
+            "user": current_user.nombre,
+            "user_id": current_user.id_usuario,
+            "created_at": datetime.now(UTC).isoformat(),
+        }
+        emit_project_event(project_id=task.project_id, payload=payload)
 
         create_feed_event(
             db=db,
             project_id=task.project_id,
             user=current_user,
             event_type=FeedEvent.TASK_UPDATED,
-            message=f"{current_user.nombre} actualizó la tarea '<strong>{task.name}</strong>'",
+            message=(
+                f"{current_user.nombre} actualizó la tarea "
+                f"'<strong>{task.name}</strong>'"
+            ),
             entity_type="task",
             entity_id=task.id_task,
         )
@@ -373,5 +369,5 @@ def update_task_with_audit(
                 entity_id=task.id_task,
                 url=f"/tasks/{task.id_task}",
             )
-        
+
     return task

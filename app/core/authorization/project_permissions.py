@@ -8,10 +8,7 @@
 
 
 def is_project_member(user, project):
-    return any(
-        m.user_id == user.id_usuario
-        for m in project.members
-    )
+    return any(m.user_id == user.id_usuario for m in project.members)
 
 
 def is_project_coordinator(user, project):
@@ -20,10 +17,7 @@ def is_project_coordinator(user, project):
 
     return any(
         m.user_id == user.id_usuario
-        and (
-            m.role == "coordinator"
-            or getattr(m.role, "value", None) == "coordinator"
-        )
+        and (m.role == "coordinator" or getattr(m.role, "value", None) == "coordinator")
         for m in project.members
     )
 
@@ -33,14 +27,6 @@ def can_manage_project(user, project):
     if "admin" in [r.name for r in user.roles]:
         return True
 
-    return is_project_coordinator(user, project)
-
-
-def can_view_tasks(user, project):
-    return is_project_member(user, project)
-
-
-def can_manage_tasks(user, project):
     return is_project_coordinator(user, project)
 
 

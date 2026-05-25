@@ -1,8 +1,8 @@
 # aapp/modules/activity_feed/activity_feed_utils.py
-# 🛠️ Utilidades para feed de actividad: funciones auxiliares para formatear mensajes 
-# de actividad, obtener íconos y colores para diferentes tipos de eventos, y otras 
-# tareas relacionadas. Estas utilidades ayudan a mantener el código organizado y 
-# reutilizable, facilitando la generación de mensajes de actividad consistentes y la 
+# 🛠️ Utilidades para feed de actividad: funciones auxiliares para formatear mensajes
+# de actividad, obtener íconos y colores para diferentes tipos de eventos, y otras
+# tareas relacionadas. Estas utilidades ayudan a mantener el código organizado y
+# reutilizable, facilitando la generación de mensajes de actividad consistentes y la
 # personalización de la apariencia de los feeds de actividad en la interfaz de usuario.
 
 
@@ -40,6 +40,3 @@ def get_feed_color(event_type: str) -> str:
         return "bg-primary"
 
     return "bg-secondary"
-
-
-

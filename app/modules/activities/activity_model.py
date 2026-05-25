@@ -7,9 +7,10 @@
 # y visualización de los objetos de actividad.
 
 
-from sqlalchemy import Column, Integer, String, Text, DateTime, Float, ForeignKey
+from datetime import UTC, datetime
+
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import relationship
-from datetime import datetime, UTC
 
 from app.db.base import Base
 
@@ -19,42 +20,27 @@ class Activity(Base):
 
     id_activity = Column(Integer, primary_key=True, index=True)
 
-    name=Column(String(150),nullable=False)
+    name = Column(String(150), nullable=False)
 
-    description=Column(Text, nullable=True)
+    description = Column(Text, nullable=True)
 
-    status=Column(String(30),
-                nullable=False,
-                default="Pendiente")
+    status = Column(String(30), nullable=False, default="Pendiente")
 
     task_id = Column(
-        Integer,
-        ForeignKey("tasks.id_task", ondelete="CASCADE"),
-        nullable=False
+        Integer, ForeignKey("tasks.id_task", ondelete="CASCADE"), nullable=False
     )
 
-    user_id = Column(
-        Integer,
-        ForeignKey("usuarios.id_usuario"),
-        nullable=False
-    )
+    user_id = Column(Integer, ForeignKey("usuarios.id_usuario"), nullable=False)
 
     time_spent = Column(Float, default=0)
 
-    created_at = Column(
-        DateTime,
-        default=datetime.now(UTC),
-        nullable=False
-    )
+    created_at = Column(DateTime, default=datetime.now(UTC), nullable=False)
 
     # Relaciones
     task = relationship("Task", back_populates="activities")
 
     # Usuario que realizó la actividad
-    user = relationship(
-        "User",
-        back_populates="activities"
-    )
+    user = relationship("User", back_populates="activities")
 
     # Adjuntos asociados a la actividad
     attachments = relationship(
@@ -65,4 +51,7 @@ class Activity(Base):
     )
 
     def __repr__(self):
-        return f"<Activity(id={self.id_activity}, name={self.name}, hours={self.time_spent})>"
+        return (
+            f"<Activity(id={self.id_activity}, name={self.name},"
+            f" hours={self.time_spent})>"
+        )

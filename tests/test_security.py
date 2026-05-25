@@ -1,6 +1,6 @@
 # tests/test_security.py
 
-# Este archivo contiene pruebas para la funcionalidad de seguridad, 
+# Este archivo contiene pruebas para la funcionalidad de seguridad,
 # incluyendo el hashing de contraseñas,
 # la verificación de contraseñas, la creación de tokens de acceso y actualización,
 # y la decodificación de tokens. Se definen pruebas para verificar que estas funciones
@@ -37,28 +37,20 @@ def test_verify_password_fail():
 
 
 def test_create_access_token():
-    token = create_access_token({
-        "sub": "1",
-        "roles": ["admin"]
-    })
+    token = create_access_token({"sub": "1", "roles": ["admin"]})
 
     assert isinstance(token, str)
     assert len(token) > 20
 
 
 def test_create_refresh_token():
-    token = create_refresh_token({
-        "sub": "1"
-    })
+    token = create_refresh_token({"sub": "1"})
 
     assert isinstance(token, str)
 
 
 def test_decode_token_ok():
-    token = create_access_token({
-        "sub": "99",
-        "roles": ["student"]
-    })
+    token = create_access_token({"sub": "99", "roles": ["student"]})
 
     payload = decode_token(token)
 

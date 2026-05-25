@@ -15,27 +15,29 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-
-from app.core.authorization.project_permissions import user_in_project
-from app.core.render import render
-from app.db.session import get_db
-
-from app.modules.activities.activity_model import Activity
-from app.modules.activity_feed.activity_feed_model import ProjectActivityFeed
-from app.modules.auth.auth_dependencies_web import require_permission_web
 from app.core.constants.actions import Actions
 from app.core.constants.resources import Resources
-
+from app.core.render import render
+from app.db.session import get_db
+from app.modules.activities.activity_model import Activity
 from app.modules.activity_feed.activity_feed_constants import FeedEvent
+from app.modules.activity_feed.activity_feed_model import ProjectActivityFeed
 from app.modules.activity_feed.activity_feed_service import create_feed_event
+from app.modules.auth.auth_dependencies_web import require_permission_web
 from app.modules.notifications.notification_constants import NotificationType
 from app.modules.notifications.notification_service import create_notification
-from app.modules.users.user_model import User
-
 from app.modules.projects.project_members_service import add_member
 from app.modules.projects.project_model import Project
-from app.modules.projects.projects_service import ensure_can_manage_project, ensure_can_manage_project_members, ensure_can_view_project, get_available_users, remove_member, search_projects
+from app.modules.projects.projects_service import (
+    ensure_can_manage_project,
+    ensure_can_manage_project_members,
+    ensure_can_view_project,
+    get_available_users,
+    remove_member,
+    search_projects,
+)
 from app.modules.tasks.task_model import Task
+from app.modules.users.user_model import User
 from app.utils.flash import flash_success
 
 router = APIRouter(prefix="/projects", tags=["Projects Web"])
@@ -66,7 +68,7 @@ def projects_list(
         status=status,
         page=page,
         per_page=per_page,
-        current_user=current_user
+        current_user=current_user,
     )
 
     total_pages = (total + per_page - 1) // per_page
@@ -82,6 +84,7 @@ def projects_list(
             "total_pages": total_pages,
         },
     )
+
 
 # =========================================================
 # 📝 FORM CREATE
@@ -161,7 +164,10 @@ def project_create(
         project_id=project.id_project,
         user=current_user,
         event_type=FeedEvent.PROJECT_CREATED,
-        message=f"{current_user.nombre} creó el proyecto '<strong>{project.name}</strong>'",
+        message=(
+            f"{current_user.nombre} creó el proyecto "
+            f"'<strong>{project.name}</strong>'",
+        ),
         entity_type="project",
         entity_id=project.id_project,
     )
@@ -194,18 +200,14 @@ def project_detail(
         )
     ),
 ):
-    project = (
-        db.query(Project)
-        .filter(Project.id_project == project_id)
-        .first()
-    )
+    project = db.query(Project).filter(Project.id_project == project_id).first()
 
     if not project:
         raise HTTPException(
             status_code=404,
             detail="Proyecto no encontrado",
         )
-    
+
     ensure_can_view_project(current_user, project)
 
     project_activities = (
@@ -239,9 +241,7 @@ def project_detail(
 
     feed_events = (
         db.query(ProjectActivityFeed)
-        .filter(
-            ProjectActivityFeed.project_id == project.id_project
-        )
+        .filter(ProjectActivityFeed.project_id == project.id_project)
         .order_by(ProjectActivityFeed.created_at.desc())
         .limit(20)
         .all()
@@ -260,9 +260,9 @@ def project_detail(
             "tasks": tasks,
             "kanban": kanban,
             "feed_events": feed_events,
-            "members":members,
+            "members": members,
             "available_users": available_users,
-            "current_user":current_user,
+            "current_user": current_user,
         },
     )
 
@@ -282,18 +282,14 @@ def project_edit_form(
         )
     ),
 ):
-    project = (
-        db.query(Project)
-        .filter(Project.id_project == project_id)
-        .first()
-    )
+    project = db.query(Project).filter(Project.id_project == project_id).first()
 
     if not project:
         raise HTTPException(
             status_code=404,
             detail="Proyecto no encontrado",
         )
-    
+
     ensure_can_manage_project(current_user, project)
 
     return render(
@@ -325,20 +321,16 @@ def project_update(
         )
     ),
 ):
-    project = (
-        db.query(Project)
-        .filter(Project.id_project == project_id)
-        .first()
-    )
+    project = db.query(Project).filter(Project.id_project == project_id).first()
 
     if not project:
         raise HTTPException(
             status_code=404,
             detail="Proyecto no encontrado",
         )
-    
+
     ensure_can_manage_project(current_user, project)
-    
+
     old_name = project.name
     old_status = project.status
 
@@ -380,7 +372,10 @@ def project_update(
             project_id=project.id_project,
             user=current_user,
             event_type=FeedEvent.PROJECT_UPDATED,
-            message=f"{current_user.nombre} actualizó el proyecto '<strong>{project.name}</strong>'",
+            message=(
+                f"{current_user.nombre} actualizó el proyecto "
+                f"'<strong>{project.name}</strong>'"
+            ),
             entity_type="project",
             entity_id=project.id_project,
         )
@@ -413,18 +408,14 @@ def project_delete(
         )
     ),
 ):
-    project = (
-        db.query(Project)
-        .filter(Project.id_project == project_id)
-        .first()
-    )
+    project = db.query(Project).filter(Project.id_project == project_id).first()
 
     if not project:
         raise HTTPException(
             status_code=404,
             detail="Proyecto no encontrado",
         )
-    
+
     ensure_can_manage_project(current_user, project)
 
     db.delete(project)
@@ -439,6 +430,7 @@ def project_delete(
         "/projects/",
         status_code=303,
     )
+
 
 # =========================================================
 # ➕ ADD MEMBER
@@ -457,23 +449,19 @@ def add_project_member(
         )
     ),
 ):
-    
-    project = db.query(Project).filter(
-        Project.id_project == project_id
-    ).first()
+
+    project = db.query(Project).filter(Project.id_project == project_id).first()
 
     if not project:
         raise HTTPException(404, "Proyecto no encontrado")
-    
+
     ensure_can_manage_project_members(current_user, project)
 
-    user = db.query(User).filter(
-        User.id_usuario == user_id
-    ).first()
+    user = db.query(User).filter(User.id_usuario == user_id).first()
 
     if not user:
         raise HTTPException(404, "Usuario no encontrado")
-    
+
     add_member(db, project_id, user_id, role)
 
     create_feed_event(
@@ -520,25 +508,16 @@ def delete_member(
     project_id: int,
     user_id: int,
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(
-            Resources.PROJECTS,
-            Actions.UPDATE
-        )
-    ),
+    current_user=Depends(require_permission_web(Resources.PROJECTS, Actions.UPDATE)),
 ):
-    project = db.query(Project).filter(
-        Project.id_project == project_id
-    ).first()
+    project = db.query(Project).filter(Project.id_project == project_id).first()
 
     if not project:
         raise HTTPException(404, "Proyecto no encontrado")
-    
+
     ensure_can_manage_project_members(current_user, project)
 
-    user = db.query(User).filter(
-        User.id_usuario == user_id
-    ).first()
+    user = db.query(User).filter(User.id_usuario == user_id).first()
 
     if not user:
         raise HTTPException(404, "Usuario no encontrado")
@@ -561,8 +540,4 @@ def delete_member(
 
     db.commit()
 
-    return RedirectResponse(
-        f"/projects/{project_id}",
-        status_code=303
-    )
-
+    return RedirectResponse(f"/projects/{project_id}", status_code=303)

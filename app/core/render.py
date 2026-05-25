@@ -10,8 +10,7 @@ def render(request, template_name, extra=None):
     context = get_template_context(request)
 
     # Debug: mostrar claves del contexto
-    print(f"Context Keys for render: {context.keys()}")  
-   
+    print(f"Context Keys for render: {context.keys()}")
 
     if extra:
         context.update(extra)

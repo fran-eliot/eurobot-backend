@@ -33,7 +33,7 @@ router = APIRouter(prefix="/roles", tags=["Roles Web"])
 def roles_list(
     request: Request,
     db: Session = Depends(get_db),
-    current_user = Depends(require_permission_web(Resources.ROLES, Actions.READ))
+    current_user=Depends(require_permission_web(Resources.ROLES, Actions.READ)),
 ):
     """
     Lista todos los roles.
@@ -41,13 +41,7 @@ def roles_list(
 
     roles = get_all_roles(db)
 
-    return render(
-        request,
-        "roles/roles_list.html",
-        {
-            "roles": roles
-        }
-    )
+    return render(request, "roles/roles_list.html", {"roles": roles})
 
 
 # =========================================================
@@ -59,7 +53,7 @@ def role_form(
     request: Request,
     role_id: int | None = None,
     db: Session = Depends(get_db),
-    current_user = Depends(require_permission_web(Resources.ROLES, Actions.UPDATE))
+    current_user=Depends(require_permission_web(Resources.ROLES, Actions.UPDATE)),
 ):
     """
     Formulario unificado para crear o editar roles.
@@ -76,10 +70,7 @@ def role_form(
     return render(
         request,
         "roles/roles_form.html",
-        {
-            "role": role,
-            "grouped_permissions": grouped_permissions
-        }
+        {"role": role, "grouped_permissions": grouped_permissions},
     )
 
 
@@ -95,7 +86,7 @@ def role_save(
     permissions: list[int] = Form([]),
     role_id: int | None = None,
     db: Session = Depends(get_db),
-    current_user = Depends(require_permission_web(Resources.ROLES, Actions.UPDATE))
+    current_user=Depends(require_permission_web(Resources.ROLES, Actions.UPDATE)),
 ):
     """
     Guarda rol:
@@ -132,10 +123,7 @@ def role_save(
         return render(
             request,
             "roles/roles_form.html",
-            {
-                "role": None,
-                "grouped_permissions": group_permissions(permissions_all)
-            }
+            {"role": None, "grouped_permissions": group_permissions(permissions_all)},
         )
 
 
@@ -147,7 +135,7 @@ def role_detail(
     request: Request,
     role_id: int,
     db: Session = Depends(get_db),
-    current_user = Depends(require_permission_web(Resources.ROLES, Actions.READ))
+    current_user=Depends(require_permission_web(Resources.ROLES, Actions.READ)),
 ):
     """
     Vista detalle de rol:
@@ -163,11 +151,7 @@ def role_detail(
     return render(
         request,
         "roles/roles_detail.html",
-        {
-            "role": role,
-            "grouped_permissions": grouped_permissions,
-            "logs": logs
-        }
+        {"role": role, "grouped_permissions": grouped_permissions, "logs": logs},
     )
 
 
@@ -179,7 +163,7 @@ def role_delete(
     request: Request,
     role_id: int,
     db: Session = Depends(get_db),
-    current_user = Depends(require_permission_web(Resources.ROLES, Actions.DELETE))
+    current_user=Depends(require_permission_web(Resources.ROLES, Actions.DELETE)),
 ):
     """
     Elimina un rol.

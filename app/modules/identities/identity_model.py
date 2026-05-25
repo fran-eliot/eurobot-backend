@@ -28,22 +28,17 @@ class Identity(Base):
     # =========================================================
     # 📧 CREDENCIALES
     # =========================================================
-    email = Column(
-        String(255),
-        unique=True,
-        nullable=False,
-        index=True
-    )
+    email = Column(String(255), unique=True, nullable=False, index=True)
 
     password_hash = Column(
         String(255),
-        nullable=True  # null si es login externo (OAuth)
+        nullable=True,  # null si es login externo (OAuth)
     )
 
     provider = Column(
         String(50),
         default="local",
-        nullable=False
+        nullable=False,
         # ejemplos: local, google, github
     )
 
@@ -51,15 +46,10 @@ class Identity(Base):
     # 🔗 RELACIÓN CON USUARIO
     # =========================================================
     user_id = Column(
-        Integer,
-        ForeignKey("usuarios.id_usuario", ondelete="CASCADE"),
-        nullable=False
+        Integer, ForeignKey("usuarios.id_usuario", ondelete="CASCADE"), nullable=False
     )
 
-    usuario = relationship(
-        "User",
-        back_populates="identidades"
-    )
+    usuario = relationship("User", back_populates="identidades")
 
     # =========================================================
     # 🧾 REPRESENTACIÓN

@@ -1,5 +1,6 @@
 # app/modules/notifications/notification_constants.py
 
+
 class NotificationType:
     TASK_ASSIGNED = "TASK_ASSIGNED"
     TASK_STATUS_CHANGED = "TASK_STATUS_CHANGED"

@@ -24,13 +24,7 @@ def login_page(request: Request):
     """
     Renderiza formulario de login.
     """
-    return templates.TemplateResponse(
-        request,
-        "auth/login.html",
-        {
-         
-         }
-    )
+    return templates.TemplateResponse(request, "auth/login.html", {})
 
 
 # =========================================================
@@ -41,7 +35,7 @@ def login(
     request: Request,
     email: str = Form(...),
     password: str = Form(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     """
     Procesa login:
@@ -56,11 +50,7 @@ def login(
 
     except HTTPException:
         return templates.TemplateResponse(
-            request,
-            "auth/login.html",
-            {
-                "error": "Credenciales incorrectas"
-            }
+            request, "auth/login.html", {"error": "Credenciales incorrectas"}
         )
 
     user = result["user"]
@@ -75,7 +65,7 @@ def login(
         resource_type="user",
         resource_id=user.id_usuario,
         description="Inicio de sesión",
-        request=request
+        request=request,
     )
 
     db.commit()
@@ -83,30 +73,23 @@ def login(
     # =========================================================
     # 🍪 RESPONSE + COOKIES
     # =========================================================
-    response = RedirectResponse(
-        url="/dashboard",
-        status_code=303
-    )
+    response = RedirectResponse(url="/dashboard", status_code=303)
 
     cookie_config = {
         "httponly": True,
         "samesite": "lax" if settings.DEBUG else "strict",
         "secure": not settings.DEBUG,
-        "path": "/"
+        "path": "/",
     }
 
     # 🔥 access token
     response.set_cookie(
-        key="access_token",
-        value=result["access_token"],
-        **cookie_config
+        key="access_token", value=result["access_token"], **cookie_config
     )
 
     # 🔥 refresh token
     response.set_cookie(
-        key="refresh_token",
-        value=result["refresh_token"],
-        **cookie_config
+        key="refresh_token", value=result["refresh_token"], **cookie_config
     )
 
     return response
@@ -116,9 +99,7 @@ def login(
 # 🔄 REFRESH TOKEN
 # =========================================================
 @router.get("/refresh")
-def refresh_token(
-    request: Request,
-    db: Session = Depends(get_db)):
+def refresh_token(request: Request, db: Session = Depends(get_db)):
     """
     Genera un nuevo access token a partir del refresh token.
     """
@@ -126,10 +107,7 @@ def refresh_token(
     refresh_token = request.cookies.get("refresh_token")
 
     if not refresh_token:
-        raise HTTPException(
-            status_code=401,
-            detail="No refresh token"
-        )
+        raise HTTPException(status_code=401, detail="No refresh token")
 
     try:
         # 🔐 validar token
@@ -146,26 +124,20 @@ def refresh_token(
             httponly=True,
             samesite="lax" if settings.DEBUG else "strict",
             secure=not settings.DEBUG,
-            path="/"
+            path="/",
         )
 
         return response
 
     except Exception:
-        raise HTTPException(
-            status_code=401,
-            detail="Refresh token inválido"
-        )
+        raise HTTPException(status_code=401, detail="Refresh token inválido")
 
 
 # =========================================================
 # 🚪 LOGOUT
 # =========================================================
 @router.post("/logout")
-def logout(
-    request: Request,
-    db: Session = Depends(get_db)
-):
+def logout(request: Request, db: Session = Depends(get_db)):
     """
     Cierra sesión:
     - Intenta registrar la auditoría si hay usuario logueado
@@ -184,14 +156,11 @@ def logout(
             resource_type="user",
             resource_id=user_id,
             description="Cierre de sesión",
-            request=request
+            request=request,
         )
         db.commit()
 
-    response = RedirectResponse(
-        url="/login",
-        status_code=303
-    )
+    response = RedirectResponse(url="/login", status_code=303)
 
     response.delete_cookie("access_token", path="/")
     response.delete_cookie("refresh_token", path="/")

@@ -1,6 +1,6 @@
 # tests/test_menu_service.py
-# Este archivo contiene pruebas para el servicio de menú dinámico basado en permisos.   
-# Se prueban casos como la generación de la estructura del menú, el filtrado por 
+# Este archivo contiene pruebas para el servicio de menú dinámico basado en permisos.
+# Se prueban casos como la generación de la estructura del menú, el filtrado por
 # permisos, la marcación de elementos activos y la construcción de breadcrumbs.
 
 
@@ -24,10 +24,7 @@ def test_get_menu_structure():
 def test_filter_menu_dashboard_only():
     menu = get_menu_structure()
 
-    result = filter_menu_by_permissions(
-        menu,
-        lambda perm: perm == "dashboard:read"
-    )
+    result = filter_menu_by_permissions(menu, lambda perm: perm == "dashboard:read")
 
     labels = [item["label"] for item in result]
     assert "Dashboard" in labels
@@ -36,10 +33,7 @@ def test_filter_menu_dashboard_only():
 def test_filter_menu_profile_without_permission():
     menu = get_menu_structure()
 
-    result = filter_menu_by_permissions(
-        menu,
-        lambda perm: False
-    )
+    result = filter_menu_by_permissions(menu, lambda perm: False)
 
     labels = [item["label"] for item in result]
     assert "Mi perfil" in labels

@@ -48,10 +48,7 @@ def create_role(db: Session, nombre: str, descripcion: str | None = None) -> Rol
     if existing:
         raise HTTPException(status_code=400, detail="El rol ya existe")
 
-    role = Role(
-        nombre=nombre.strip().lower(),
-        descripcion=descripcion
-    )
+    role = Role(nombre=nombre.strip().lower(), descripcion=descripcion)
 
     db.add(role)
     db.flush()  # necesario para obtener ID
@@ -65,10 +62,9 @@ def update_role(db: Session, role: Role, nombre: str, descripcion: str | None = 
     """
 
     # 🔥 evitar duplicados (otro rol con mismo nombre)
-    existing = db.query(Role).filter(
-        Role.nombre == nombre,
-        Role.id_rol != role.id_rol
-    ).first()
+    existing = (
+        db.query(Role).filter(Role.nombre == nombre, Role.id_rol != role.id_rol).first()
+    )
 
     if existing:
         raise HTTPException(status_code=400, detail="Ya existe un rol con ese nombre")
@@ -94,11 +90,7 @@ def get_all_permissions(db: Session) -> list[Permission]:
     return db.query(Permission).order_by(Permission.nombre).all()
 
 
-def sync_role_permissions(
-    db: Session,
-    role: Role,
-    permission_ids: list[int]
-):
+def sync_role_permissions(db: Session, role: Role, permission_ids: list[int]):
     """
     Sincroniza los permisos de un rol (replace completo).
     """
@@ -109,9 +101,7 @@ def sync_role_permissions(
     if not permission_ids:
         return
 
-    permissions = db.query(Permission).filter(
-        Permission.id.in_(permission_ids)
-    ).all()
+    permissions = db.query(Permission).filter(Permission.id.in_(permission_ids)).all()
 
     role.permissions.extend(permissions)
 
@@ -139,11 +129,9 @@ def group_permissions(permissions: list[Permission]) -> dict:
             module = "other"
             action = perm.nombre
 
-        grouped.setdefault(module, []).append({
-            "id": perm.id,
-            "name": perm.nombre,
-            "action": action
-        })
+        grouped.setdefault(module, []).append(
+            {"id": perm.id, "name": perm.nombre, "action": action}
+        )
 
     # 🔥 ordenar acciones dentro de cada módulo
     for module in grouped:
@@ -162,10 +150,7 @@ def get_role_audit_logs(db: Session, role_id: int, limit: int = 20):
 
     return (
         db.query(AuditLog)
-        .filter(
-            AuditLog.resource_type == "role",
-            AuditLog.resource_id == role_id
-        )
+        .filter(AuditLog.resource_type == "role", AuditLog.resource_id == role_id)
         .order_by(AuditLog.created_at.desc())
         .limit(limit)
         .all()

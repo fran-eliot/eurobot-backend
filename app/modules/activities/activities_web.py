@@ -5,39 +5,31 @@
 from fastapi import (
     APIRouter,
     Depends,
-    Request,
     Form,
     HTTPException,
+    Request,
 )
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func
 
 from app.core.authorization.activity_permissions import ensure_can_view_activity
-from app.db.session import get_db
+from app.core.constants.actions import Actions
+from app.core.constants.resources import Resources
 from app.core.render import render
-from app.modules.activity_attachments.activity_attachment_model import ActivityAttachment
+from app.db.session import get_db
+from app.modules.activities.activity_model import Activity
+from app.modules.activity_attachments.activity_attachment_model import (
+    ActivityAttachment,
+)
 from app.modules.activity_feed.activity_feed_constants import FeedEvent
 from app.modules.activity_feed.activity_feed_service import create_feed_event
+from app.modules.auth.auth_dependencies_web import require_permission_web
 from app.modules.projects.project_member_model import ProjectMember
-from app.utils.flash import flash_success
-
-from app.modules.activities.activity_model import Activity
 from app.modules.tasks.task_model import Task
 from app.modules.users.user_model import User
+from app.utils.flash import flash_success
 
-from app.modules.auth.auth_dependencies_web import (
-    require_permission_web
-)
-
-from app.core.constants.resources import Resources
-from app.core.constants.actions import Actions
-
-
-router = APIRouter(
-    prefix="/activities",
-    tags=["Activities Web"]
-)
+router = APIRouter(prefix="/activities", tags=["Activities Web"])
 
 
 # =====================================================
@@ -51,29 +43,19 @@ def activities_list(
     task_id: int | None = None,
     page: int = 1,
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(
-            Resources.ACTIVITIES,
-            Actions.READ
-        )
-    ),
+    current_user=Depends(require_permission_web(Resources.ACTIVITIES, Actions.READ)),
 ):
     per_page = 10
 
     query = db.query(Activity)
 
-    roles = [
-        r.nombre.lower()
-        for r in getattr(current_user, "roles", [])
-    ]
+    roles = [r.nombre.lower() for r in getattr(current_user, "roles", [])]
 
     query = query.join(Activity.task)
 
     if "admin" not in roles:
         if "estudiante" in roles:
-            query = query.filter(
-                Activity.user_id == current_user.id_usuario
-            )
+            query = query.filter(Activity.user_id == current_user.id_usuario)
         else:
             project_ids = [
                 row[0]
@@ -85,19 +67,13 @@ def activities_list(
             query = query.filter(Task.project_id.in_(project_ids))
 
     if search:
-        query = query.filter(
-            Activity.name.ilike(f"%{search}%")
-        )
+        query = query.filter(Activity.name.ilike(f"%{search}%"))
 
     if status != "all":
-        query = query.filter(
-            Activity.status == status
-        )
+        query = query.filter(Activity.status == status)
 
     if task_id:
-        query = query.filter(
-            Activity.task_id == task_id
-        )
+        query = query.filter(Activity.task_id == task_id)
 
     stats_query = query
 
@@ -122,23 +98,13 @@ def activities_list(
             .all()
         ]
 
-        tasks = (
-            db.query(Task)
-            .filter(Task.project_id.in_(project_ids))
-            .all()
-        )
+        tasks = db.query(Task).filter(Task.project_id.in_(project_ids)).all()
 
-    pending_count = stats_query.filter(
-        Activity.status == "Pendiente"
-    ).count()
+    pending_count = stats_query.filter(Activity.status == "Pendiente").count()
 
-    progress_count = stats_query.filter(
-        Activity.status == "En progreso"
-    ).count()
+    progress_count = stats_query.filter(Activity.status == "En progreso").count()
 
-    completed_count = stats_query.filter(
-        Activity.status == "Completada"
-    ).count()
+    completed_count = stats_query.filter(Activity.status == "Completada").count()
 
     return render(
         request,
@@ -167,17 +133,9 @@ def activity_create_form(
     request: Request,
     task_id: int | None = None,
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(
-            Resources.ACTIVITIES,
-            Actions.CREATE
-        )
-    ),
+    current_user=Depends(require_permission_web(Resources.ACTIVITIES, Actions.CREATE)),
 ):
-    roles = [
-        r.nombre.lower()
-        for r in getattr(current_user, "roles", [])
-    ]
+    roles = [r.nombre.lower() for r in getattr(current_user, "roles", [])]
 
     if "admin" in roles:
         tasks = db.query(Task).all()
@@ -189,11 +147,7 @@ def activity_create_form(
             .all()
         ]
 
-        tasks = (
-            db.query(Task)
-            .filter(Task.project_id.in_(project_ids))
-            .all()
-        )
+        tasks = db.query(Task).filter(Task.project_id.in_(project_ids)).all()
 
     users = [current_user] if "estudiante" in roles else db.query(User).all()
 
@@ -224,20 +178,13 @@ def activity_create(
     user_id: int | None = Form(None),
     time_spent: float = Form(0),
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(
-            Resources.ACTIVITIES,
-            Actions.CREATE
-        )
-    ),
+    current_user=Depends(require_permission_web(Resources.ACTIVITIES, Actions.CREATE)),
 ):
-    task = db.query(Task).filter(
-        Task.id_task == task_id
-    ).first()
+    task = db.query(Task).filter(Task.id_task == task_id).first()
 
     if not task:
         raise HTTPException(404, "Tarea no encontrada")
-    
+
     fake_activity = Activity(
         name=name,
         task=task,
@@ -247,10 +194,7 @@ def activity_create(
 
     ensure_can_view_activity(db, current_user, fake_activity)
 
-    if "estudiante" in [
-        r.nombre.lower()
-        for r in getattr(current_user, "roles", [])
-    ]:
+    if "estudiante" in [r.nombre.lower() for r in getattr(current_user, "roles", [])]:
         user_id = current_user.id_usuario
 
     activity = Activity(
@@ -271,17 +215,17 @@ def activity_create(
         project_id=task.project_id,
         user=current_user,
         event_type=FeedEvent.ACTIVITY_CREATED,
-        message=f"{current_user.nombre} creó la actividad '<strong>{activity.name}</strong>'",
+        message=(
+            f"{current_user.nombre} creó la actividad "
+            f"'<strong>{activity.name}</strong>'"
+        ),
         entity_type="activity",
         entity_id=activity.id_activity,
     )
 
     db.commit()
 
-    flash_success(
-        request,
-        "Actividad creada correctamente"
-    )
+    flash_success(request, "Actividad creada correctamente")
 
     return RedirectResponse(
         f"/activities/{activity.id_activity}",
@@ -297,12 +241,7 @@ def activity_detail(
     activity_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(
-            Resources.ACTIVITIES,
-            Actions.READ
-        )
-    ),
+    current_user=Depends(require_permission_web(Resources.ACTIVITIES, Actions.READ)),
 ):
     activity = (
         db.query(Activity)
@@ -317,15 +256,13 @@ def activity_detail(
 
     if not activity:
         raise HTTPException(404, "Actividad no encontrada")
-    
+
     ensure_can_view_activity(db, current_user, activity)
 
     return render(
         request,
         "activities/activities_detail.html",
-        {
-            "activity": activity
-        },
+        {"activity": activity},
     )
 
 
@@ -337,12 +274,7 @@ def activity_edit_form(
     activity_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(
-            Resources.ACTIVITIES,
-            Actions.UPDATE
-        )
-    ),
+    current_user=Depends(require_permission_web(Resources.ACTIVITIES, Actions.UPDATE)),
 ):
     activity = (
         db.query(Activity)
@@ -356,13 +288,10 @@ def activity_edit_form(
 
     if not activity:
         raise HTTPException(404, "Actividad no encontrada")
-    
+
     ensure_can_view_activity(db, current_user, activity)
 
-    roles = [
-        r.nombre.lower()
-        for r in getattr(current_user, "roles", [])
-    ]
+    roles = [r.nombre.lower() for r in getattr(current_user, "roles", [])]
 
     if "admin" in roles:
         tasks = db.query(Task).all()
@@ -374,11 +303,7 @@ def activity_edit_form(
             .all()
         ]
 
-        tasks = (
-            db.query(Task)
-            .filter(Task.project_id.in_(project_ids))
-            .all()
-        )
+        tasks = db.query(Task).filter(Task.project_id.in_(project_ids)).all()
 
     users = [current_user] if "estudiante" in roles else db.query(User).all()
 
@@ -410,12 +335,7 @@ def activity_update(
     user_id: int | None = Form(None),
     time_spent: float = Form(0),
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(
-            Resources.ACTIVITIES,
-            Actions.UPDATE
-        )
-    ),
+    current_user=Depends(require_permission_web(Resources.ACTIVITIES, Actions.UPDATE)),
 ):
     activity = (
         db.query(Activity)
@@ -429,15 +349,13 @@ def activity_update(
 
     if not activity:
         raise HTTPException(404, "Actividad no encontrada")
-    
+
     ensure_can_view_activity(db, current_user, activity)
-    
+
     old_name = activity.name
     old_status = activity.status
 
-    new_task = db.query(Task).filter(
-        Task.id_task == task_id
-    ).first()
+    new_task = db.query(Task).filter(Task.id_task == task_id).first()
 
     if not new_task:
         raise HTTPException(404, "Tarea no encontrada")
@@ -469,17 +387,17 @@ def activity_update(
             project_id=activity.task.project_id,
             user=current_user,
             event_type=FeedEvent.ACTIVITY_UPDATED,
-            message=f"{current_user.nombre} actualizó la actividad '<strong>{activity.name}</strong>'",
+            message=(
+                f"{current_user.nombre} actualizó la actividad '"
+                f"<strong>{activity.name}</strong>'",
+            ),
             entity_type="activity",
             entity_id=activity.id_activity,
-    )
-        
+        )
+
     db.commit()
 
-    flash_success(
-        request,
-        "Actividad actualizada correctamente"
-    )
+    flash_success(request, "Actividad actualizada correctamente")
 
     return RedirectResponse(
         f"/activities/{activity.id_activity}",
@@ -495,12 +413,7 @@ def activity_delete(
     activity_id: int,
     request: Request,
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(
-            Resources.ACTIVITIES,
-            Actions.DELETE
-        )
-    ),
+    current_user=Depends(require_permission_web(Resources.ACTIVITIES, Actions.DELETE)),
 ):
     activity = (
         db.query(Activity)
@@ -514,9 +427,9 @@ def activity_delete(
 
     if not activity:
         raise HTTPException(404, "Actividad no encontrada")
-    
+
     ensure_can_view_activity(db, current_user, activity)
-    
+
     activity_name = activity.name
     project_id = activity.task.project_id
     activity_id = activity.id_activity
@@ -526,18 +439,18 @@ def activity_delete(
         project_id=project_id,
         user=current_user,
         event_type=FeedEvent.ACTIVITY_DELETED,
-        message=f"{current_user.nombre} eliminó la actividad '<strong>{activity_name}</strong>'",
+        message=(
+            f"{current_user.nombre} eliminó la actividad "
+            f"'<strong>{activity_name}</strong>'"
+        ),
         entity_type="activity",
         entity_id=activity_id,
     )
-    
+
     db.delete(activity)
     db.commit()
 
-    flash_success(
-        request,
-        "Actividad eliminada correctamente"
-    )
+    flash_success(request, "Actividad eliminada correctamente")
 
     return RedirectResponse(
         "/activities/",

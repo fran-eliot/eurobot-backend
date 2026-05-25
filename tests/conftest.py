@@ -1,7 +1,7 @@
 # conftest.py
 # Este archivo se utiliza para definir fixtures de pytest que pueden ser utilizadas
-# en múltiples archivos de prueba. En este caso, se define una fixture para crear 
-# un cliente de prueba de FastAPI que se puede usar en las pruebas para realizar 
+# en múltiples archivos de prueba. En este caso, se define una fixture para crear
+# un cliente de prueba de FastAPI que se puede usar en las pruebas para realizar
 # solicitudes a la aplicación.
 
 import os
@@ -34,14 +34,10 @@ SQLALCHEMY_DATABASE_URL = "sqlite://"
 engine_test = create_engine(
     SQLALCHEMY_DATABASE_URL,
     connect_args={"check_same_thread": False},
-    poolclass=StaticPool
+    poolclass=StaticPool,
 )
 
-TestingSessionLocal = sessionmaker(
-    autocommit=False,
-    autoflush=False,
-    bind=engine_test
-)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine_test)
 
 
 # =====================================================
@@ -54,6 +50,7 @@ Base.metadata.create_all(bind=engine_test)
 # =====================================================
 # OVERRIDE get_db
 # =====================================================
+
 
 def override_get_db():
     db = TestingSessionLocal()
@@ -70,6 +67,7 @@ app.dependency_overrides[get_db] = override_get_db
 # FIXTURE CLIENT
 # =====================================================
 
+
 @pytest.fixture()
 def client():
     with TestClient(app) as c:
@@ -79,6 +77,7 @@ def client():
 # =====================================================
 # FIXTURE DB SESSION
 # =====================================================
+
 
 @pytest.fixture()
 def db():
@@ -93,10 +92,12 @@ def db():
 # LIMPIEZA AUTOMÁTICA ENTRE TESTS
 # =====================================================
 
+
 @pytest.fixture(autouse=True)
 def reset_db():
     Base.metadata.drop_all(bind=engine_test)
     Base.metadata.create_all(bind=engine_test)
+
 
 def hash_password(password: str):
     return bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
@@ -110,11 +111,19 @@ def seed_data():
     # PERMISOS
     # ===============================
     perms = [
-        "users:read", "users:create", "users:update", "users:delete",
-        "roles:read", "roles:create", "roles:update", "roles:delete",
-        "identities:read", "identities:create", "identities:update", 
+        "users:read",
+        "users:create",
+        "users:update",
+        "users:delete",
+        "roles:read",
+        "roles:create",
+        "roles:update",
+        "roles:delete",
+        "identities:read",
+        "identities:create",
+        "identities:update",
         "identities:delete",
-        "dashboard:read"
+        "dashboard:read",
     ]
 
     permissions = {}
@@ -148,7 +157,6 @@ def seed_data():
     alumno.roles.append(student_role)
     user_uah.roles.append(student_role)
 
-
     db.add_all([admin, alumno, user_uah])
     db.flush()
 
@@ -159,25 +167,25 @@ def seed_data():
         email="user_uah@uah.es",
         password_hash="",
         user_id=user_uah.id_usuario,
-        provider="uah_saml"
+        provider="uah_saml",
     )
     db.add(identiy_uah)
     db.flush()
 
-
-    db.add_all([
-        Identity(
-            email="admin1@robotica.es",
-            password_hash=hash_password("1234"),
-            user_id=admin.id_usuario
-        ),
-        Identity(
-            email="alumno1@uah.es",
-            password_hash=hash_password("1234"),
-            user_id=alumno.id_usuario
-        )
-    ])
+    db.add_all(
+        [
+            Identity(
+                email="admin1@robotica.es",
+                password_hash=hash_password("1234"),
+                user_id=admin.id_usuario,
+            ),
+            Identity(
+                email="alumno1@uah.es",
+                password_hash=hash_password("1234"),
+                user_id=alumno.id_usuario,
+            ),
+        ]
+    )
 
     db.commit()
     db.close()
-

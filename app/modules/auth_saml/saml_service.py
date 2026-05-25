@@ -1,5 +1,5 @@
 # app/modules/auth_saml/saml_service.py
-# Este módulo implementa la lógica de autenticación SAML utilizando 
+# Este módulo implementa la lógica de autenticación SAML utilizando
 # la biblioteca OneLogin.
 
 from fastapi import Request
@@ -14,8 +14,9 @@ def prepare_request(request: Request):
         "server_port": request.url.port,
         "script_name": request.url.path,
         "get_data": dict(request.query_params),
-        "post_data": form_data
+        "post_data": form_data,
     }
+
 
 def get_saml_auth(request: Request, settings):
     req = prepare_request(request)

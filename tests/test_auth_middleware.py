@@ -51,16 +51,12 @@ def test_private_invalid_token(monkeypatch):
         raise JWTError("bad token")
 
     monkeypatch.setattr(
-        "app.core.middleware.auth_middleware.validate_access_token",
-        fake_validate
+        "app.core.middleware.auth_middleware.validate_access_token", fake_validate
     )
 
     client = TestClient(make_app())
 
     client.cookies.set("access_token", "bad")
-    r = client.get(
-        "/private",
-        follow_redirects=False
-    )
+    r = client.get("/private", follow_redirects=False)
 
     assert r.status_code == 302

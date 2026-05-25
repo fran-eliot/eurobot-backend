@@ -54,9 +54,7 @@ def users_list(
     status: str = "all",
     page: int = 1,
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(Resources.USERS, Actions.READ)
-    ),
+    current_user=Depends(require_permission_web(Resources.USERS, Actions.READ)),
 ):
     per_page = 10
 
@@ -90,9 +88,7 @@ def users_list(
 def user_create_form(
     request: Request,
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(Resources.USERS, Actions.CREATE)
-    ),
+    current_user=Depends(require_permission_web(Resources.USERS, Actions.CREATE)),
 ):
     return templates.TemplateResponse(
         request,
@@ -142,9 +138,7 @@ def user_create(
     activo: bool = Form(False),
     roles: list[int] | None = Form(None),
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(Resources.USERS, Actions.CREATE)
-    ),
+    current_user=Depends(require_permission_web(Resources.USERS, Actions.CREATE)),
 ):
     roles = roles or []
 
@@ -235,11 +229,7 @@ def user_update(
         request,
     )
 
-    target_user.activo = (
-        data.activo
-        if data.activo is not None
-        else target_user.activo
-    )
+    target_user.activo = data.activo if data.activo is not None else target_user.activo
 
     sync_user_roles(db, target_user, roles)
 
@@ -261,9 +251,7 @@ def user_detail(
     request: Request,
     user_id: int,
     db: Session = Depends(get_db),
-    target_user=Depends(
-        require_owner_or_permission_web(Resources.USERS, Actions.READ)
-    ),
+    target_user=Depends(require_owner_or_permission_web(Resources.USERS, Actions.READ)),
 ):
     context = build_user_detail_view(
         db,
@@ -307,9 +295,7 @@ def update_user_roles_view(
     user_id: int,
     roles: list[int] | None = Form(None),
     db: Session = Depends(get_db),
-    current_user=Depends(
-        require_permission_web(Resources.USERS, Actions.UPDATE)
-    ),
+    current_user=Depends(require_permission_web(Resources.USERS, Actions.UPDATE)),
 ):
     roles = roles or []
 
@@ -336,10 +322,7 @@ def delete_user(
     user_id: int,
     db: Session = Depends(get_db),
     current_user=Depends(
-        require_permission_and_not_self_web(
-            Resources.USERS,
-            Actions.DELETE
-        )
+        require_permission_and_not_self_web(Resources.USERS, Actions.DELETE)
     ),
 ):
     user = get_user_or_404(db, user_id)

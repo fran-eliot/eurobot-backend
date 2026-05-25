@@ -1,7 +1,7 @@
 # tests/test_auth_middleware_extra.py
 # Este archivo contiene pruebas adicionales para la funcionalidad del middleware de
-# autenticación. Se verifica que si tanto el token de acceso como el de refresh son 
-# inválidos, el usuario sea redirigido a la página de login. 
+# autenticación. Se verifica que si tanto el token de acceso como el de refresh son
+# inválidos, el usuario sea redirigido a la página de login.
 
 from jose import JWTError
 
@@ -16,12 +16,12 @@ def test_middleware_redirect_when_refresh_invalid(client, monkeypatch):
 
     monkeypatch.setattr(
         "app.core.middleware.auth_middleware.validate_access_token",
-        fake_validate_access
+        fake_validate_access,
     )
 
     monkeypatch.setattr(
         "app.core.middleware.auth_middleware.validate_refresh_token",
-        fake_validate_refresh
+        fake_validate_refresh,
     )
 
     client.cookies.set("access_token", "bad")

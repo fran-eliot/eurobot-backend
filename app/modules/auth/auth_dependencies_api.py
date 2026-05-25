@@ -11,8 +11,7 @@ from app.modules.users.user_model import User
 
 
 def get_current_user_api(
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db)
+    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
 ):
     payload = validate_access_token(token)
 

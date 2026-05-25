@@ -1,7 +1,6 @@
 # tests/test_users_web_extra.py
-# Este archivo contiene pruebas adicionales para la funcionalidad de gestión de 
-# usuarios en la interfaz web.    
-
+# Este archivo contiene pruebas adicionales para la funcionalidad de gestión de
+# usuarios en la interfaz web.
 
 
 def fake_payload():
@@ -9,7 +8,7 @@ def fake_payload():
         "sub": "1",
         "email": "admin@test.com",
         "roles": ["admin"],
-        "permissions": ["users:create", "users:read", "users:update", "users:delete"]
+        "permissions": ["users:create", "users:read", "users:update", "users:delete"],
     }
 
 
@@ -21,7 +20,7 @@ def login_client(client):
 def patch_auth(monkeypatch):
     monkeypatch.setattr(
         "app.core.middleware.auth_middleware.validate_access_token",
-        lambda token: fake_payload()
+        lambda token: fake_payload(),
     )
 
 
@@ -30,9 +29,8 @@ def test_update_user_roles_view(client, monkeypatch):
     login_client(client)
 
     response = client.post(
-        "/users/1/roles", 
-        data={"roles": [1]}, 
-        follow_redirects=False)
+        "/users/1/roles", data={"roles": [1]}, follow_redirects=False
+    )
     assert response.status_code == 303
 
 

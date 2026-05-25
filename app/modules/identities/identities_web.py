@@ -25,10 +25,7 @@ router = APIRouter(prefix="/identities", tags=["Identities Web"])
 # 📋 LISTADO
 # =========================================================
 @router.get("/")
-def identities_list(
-    request: Request,
-    db: Session = Depends(get_db)
-):
+def identities_list(request: Request, db: Session = Depends(get_db)):
     # ================= QUERY PARAMS =================
     search = request.query_params.get("search", "").strip()
     provider = request.query_params.get("provider", "all")
@@ -36,32 +33,21 @@ def identities_list(
     per_page = 10
 
     # ================= BASE QUERY =================
-    query = db.query(Identity).options(
-        joinedload(Identity.usuario)
-    )
+    query = db.query(Identity).options(joinedload(Identity.usuario))
 
     # ================= SEARCH =================
     if search:
-        query = query.filter(
-            Identity.email.ilike(f"%{search}%")
-        )
+        query = query.filter(Identity.email.ilike(f"%{search}%"))
 
     # ================= FILTER PROVIDER =================
     if provider != "all":
-        query = query.filter(
-            Identity.provider == provider
-        )
+        query = query.filter(Identity.provider == provider)
 
     # ================= PAGINATION =================
     total = query.count()
     total_pages = ceil(total / per_page) if total else 1
 
-    identities = (
-        query
-        .offset((page - 1) * per_page)
-        .limit(per_page)
-        .all()
-    )
+    identities = query.offset((page - 1) * per_page).limit(per_page).all()
 
     # ================= RENDER =================
     return render(
@@ -72,8 +58,8 @@ def identities_list(
             "search": search,
             "provider": provider,
             "page": page,
-            "total_pages": total_pages
-        }
+            "total_pages": total_pages,
+        },
     )
 
 
@@ -86,7 +72,7 @@ def identity_form(
     request: Request,
     identity_id: int | None = None,
     db: Session = Depends(get_db),
-    current_user = Depends(require_permission_web(Resources.IDENTITIES, Actions.UPDATE))
+    current_user=Depends(require_permission_web(Resources.IDENTITIES, Actions.UPDATE)),
 ):
     identity = None
 
@@ -99,12 +85,7 @@ def identity_form(
     return templates.TemplateResponse(
         request,
         "identities/identity_form.html",
-        {
-            "identity": identity,
-            "users": users,
-            "roles": roles,
-            "errors": None
-        }
+        {"identity": identity, "users": users, "roles": roles, "errors": None},
     )
 
 
@@ -120,7 +101,7 @@ def identity_save(
     user_id: int = Form(...),
     identity_id: int | None = None,
     db: Session = Depends(get_db),
-    current_user = Depends(require_permission_web(Resources.IDENTITIES, Actions.UPDATE))
+    current_user=Depends(require_permission_web(Resources.IDENTITIES, Actions.UPDATE)),
 ):
 
     identity = None
@@ -132,10 +113,7 @@ def identity_save(
     # CREATE
     # =========================================================
     if not identity:
-
-        existing = db.query(Identity).filter(
-            Identity.email == email
-        ).first()
+        existing = db.query(Identity).filter(Identity.email == email).first()
 
         if existing:
             flash_error(request, "Email ya registrado")
@@ -145,7 +123,7 @@ def identity_save(
             email=email,
             password_hash=hash_password(password),
             user_id=user_id,
-            provider="local"
+            provider="local",
         )
 
         db.add(identity)
@@ -173,7 +151,7 @@ def identity_detail(
     request: Request,
     identity_id: int,
     db: Session = Depends(get_db),
-    current_user = Depends(require_permission_web(Resources.IDENTITIES, Actions.READ))
+    current_user=Depends(require_permission_web(Resources.IDENTITIES, Actions.READ)),
 ):
     identity = db.get(Identity, identity_id)
 
@@ -181,11 +159,7 @@ def identity_detail(
         raise HTTPException(status_code=404, detail="Identidad no encontrada")
 
     return templates.TemplateResponse(
-        request,
-        "identities/identity_detail.html",
-        {
-            "identity": identity
-        }
+        request, "identities/identity_detail.html", {"identity": identity}
     )
 
 
@@ -196,7 +170,7 @@ def identity_detail(
 def identity_delete(
     identity_id: int,
     db: Session = Depends(get_db),
-    current_user = Depends(require_permission_web(Resources.IDENTITIES, Actions.DELETE))
+    current_user=Depends(require_permission_web(Resources.IDENTITIES, Actions.DELETE)),
 ):
     identity = db.get(Identity, identity_id)
 
@@ -205,5 +179,3 @@ def identity_delete(
         db.commit()
 
     return RedirectResponse("/identities/", status_code=303)
-
-

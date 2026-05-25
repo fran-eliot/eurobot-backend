@@ -12,6 +12,7 @@ from app.core.services.menu_service import (
 # 🔐 FILTER MENU - CASOS NO CUBIERTOS
 # =========================================================
 
+
 def test_filter_menu_children_partial_permissions():
     """
     Solo algunos hijos pasan el filtro.
@@ -21,7 +22,7 @@ def test_filter_menu_children_partial_permissions():
 
     result = filter_menu_by_permissions(
         menu,
-        lambda perm: perm in ["users:read"]  # solo uno
+        lambda perm: perm in ["users:read"],  # solo uno
     )
 
     admin = next(i for i in result if i["label"] == "Administración")
@@ -39,7 +40,7 @@ def test_filter_menu_no_children_visible():
 
     result = filter_menu_by_permissions(
         menu,
-        lambda perm: False  # nadie pasa
+        lambda perm: False,  # nadie pasa
     )
 
     labels = [item["label"] for item in result]
@@ -53,10 +54,7 @@ def test_filter_menu_item_without_permission():
     """
     menu = get_menu_structure()
 
-    result = filter_menu_by_permissions(
-        menu,
-        lambda perm: False
-    )
+    result = filter_menu_by_permissions(menu, lambda perm: False)
 
     labels = [item["label"] for item in result]
 
@@ -66,6 +64,7 @@ def test_filter_menu_item_without_permission():
 # =========================================================
 # 🧭 MARK ACTIVE MENU - EDGE CASES
 # =========================================================
+
 
 def test_mark_active_menu_no_match():
     """
@@ -97,6 +96,7 @@ def test_mark_active_menu_child_exact_match():
 # 🧭 BREADCRUMBS - CASOS EXTRA
 # =========================================================
 
+
 def test_build_breadcrumbs_with_child():
     """
     Breadcrumb debe incluir padre + hijo activo.
@@ -124,6 +124,7 @@ def test_build_breadcrumbs_empty():
 # 🧭 SMART BREADCRUMBS - RAMAS COMPLEJAS
 # =========================================================
 
+
 def test_build_smart_breadcrumbs_with_dynamic_match(monkeypatch):
     """
     Simula un breadcrumb dinámico válido.
@@ -144,9 +145,9 @@ def test_build_smart_breadcrumbs_with_dynamic_match(monkeypatch):
                 "pattern": r"^/roles/(?P<id>\d+)$",
                 "param": "id",
                 "resolver": fake_resolver,
-                "label": lambda e: e.nombre
+                "label": lambda e: e.nombre,
             }
-        ]
+        ],
     )
 
     request = SimpleNamespace(url=SimpleNamespace(path="/roles/1"))
@@ -172,9 +173,9 @@ def test_build_smart_breadcrumbs_entity_not_found(monkeypatch):
                 "pattern": r"^/roles/(?P<id>\d+)$",
                 "param": "id",
                 "resolver": fake_resolver,
-                "label": lambda e: "Nunca"
+                "label": lambda e: "Nunca",
             }
-        ]
+        ],
     )
 
     request = SimpleNamespace(url=SimpleNamespace(path="/roles/1"))
@@ -199,9 +200,9 @@ def test_build_smart_breadcrumbs_exception(monkeypatch):
                 "pattern": r"^/roles/(?P<id>\d+)$",
                 "param": "id",
                 "resolver": fake_resolver,
-                "label": lambda e: "Error"
+                "label": lambda e: "Error",
             }
-        ]
+        ],
     )
 
     request = SimpleNamespace(url=SimpleNamespace(path="/roles/1"))

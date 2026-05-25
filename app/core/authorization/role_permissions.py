@@ -4,15 +4,8 @@ ROLE_PERMISSIONS = {
         "users:read",
         "users:update",
         "users:delete",
-        "roles:assign"
-        "dashboard:view"
+        "roles:assigndashboard:view",
     ],
-    "profesor": [
-        "students:read",
-        "students:update"
-        "dashboard:view"
-    ],
-    "estudiante": [
-        "profile:view"
-    ]
+    "profesor": ["students:read", "students:updatedashboard:view"],
+    "estudiante": ["profile:view"],
 }

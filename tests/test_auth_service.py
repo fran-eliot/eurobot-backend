@@ -41,7 +41,7 @@ def test_authenticate_user_ok(db):
     identity = Identity(
         email="login@test.com",
         password_hash=hash_password("1234"),
-        user_id=user.id_usuario
+        user_id=user.id_usuario,
     )
     db.add(identity)
     db.commit()
@@ -68,7 +68,7 @@ def test_authenticate_user_wrong_password(db):
     identity = Identity(
         email="wrong@test.com",
         password_hash=hash_password("1234"),
-        user_id=user.id_usuario
+        user_id=user.id_usuario,
     )
     db.add(identity)
     db.commit()
@@ -87,7 +87,7 @@ def test_authenticate_user_disabled(db):
     identity = Identity(
         email="off@test.com",
         password_hash=hash_password("1234"),
-        user_id=user.id_usuario
+        user_id=user.id_usuario,
     )
     db.add(identity)
     db.commit()
@@ -103,10 +103,7 @@ def test_refresh_access_token_ok(db):
     db.add(user)
     db.commit()
 
-    payload = {
-        "sub": str(user.id_usuario),
-        "type": "refresh"
-    }
+    payload = {"sub": str(user.id_usuario), "type": "refresh"}
 
     token = refresh_access_token(payload, db)
     assert isinstance(token, str)

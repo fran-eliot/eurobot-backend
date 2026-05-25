@@ -7,10 +7,7 @@ from app.modules.projects.project_member_model import ProjectMember
 
 
 def _roles(user):
-    return [
-        r.nombre.lower()
-        for r in getattr(user, "roles", [])
-    ]
+    return [r.nombre.lower() for r in getattr(user, "roles", [])]
 
 
 def is_admin(user):
@@ -26,9 +23,7 @@ def can_view_activity(db, current_user, activity: Activity):
         return True
 
     if is_student(current_user):
-        return (
-            activity.user_id == current_user.id_usuario
-        )
+        return activity.user_id == current_user.id_usuario
 
     member = (
         db.query(ProjectMember)

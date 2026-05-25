@@ -1,5 +1,5 @@
 # scripts/seed_db/seed_roles.py
-# Este archivo define la función para insertar datos de roles y permisos en la 
+# Este archivo define la función para insertar datos de roles y permisos en la
 # base de datos.
 
 from app.modules.roles.role_model import Permission, Role
@@ -23,36 +23,30 @@ def seed_roles(db):
         "users:create",
         "users:update",
         "users:delete",
-
         "roles:read",
         "roles:create",
         "roles:update",
         "roles:delete",
-
         "identities:read",
         "identities:create",
         "identities:update",
         "identities:delete",
-
         "projects:read",
         "projects:create",
         "projects:update",
         "projects:delete",
-
         "tasks:read",
         "tasks:create",
         "tasks:update",
         "tasks:delete",
-
         "activities:read",
         "activities:create",
         "activities:update",
         "activities:delete",
-
         "dashboard:read",
         "students:read",
         "audit:read",
-        "activity_feed:read"
+        "activity_feed:read",
     ]
 
     perms = {}
@@ -70,20 +64,15 @@ def seed_roles(db):
         perms["users:update"],
         perms["dashboard:read"],
         perms["students:read"],
-
         perms["projects:read"],
         perms["projects:create"],
         perms["projects:update"],
-
         perms["tasks:read"],
         perms["tasks:create"],
         perms["tasks:update"],
-
         perms["activities:read"],
         perms["activities:create"],
-
-        perms["activity_feed:read"]
-
+        perms["activity_feed:read"],
     ]
 
     estudiante.permissions = [
@@ -94,8 +83,7 @@ def seed_roles(db):
         perms["activities:read"],
         perms["activities:create"],
         perms["activities:update"],
-        perms["activity_feed:read"]
-
+        perms["activity_feed:read"],
     ]
 
     uah_user.permissions = [
@@ -106,8 +94,7 @@ def seed_roles(db):
         perms["activities:read"],
         perms["activities:create"],
         perms["activities:update"],
-        perms["activity_feed:read"]
-
+        perms["activity_feed:read"],
     ]
 
     db.commit()
@@ -116,5 +103,5 @@ def seed_roles(db):
         "admin": admin,
         "profesor": profesor,
         "estudiante": estudiante,
-        "uah_user": uah_user
+        "uah_user": uah_user,
     }, perms

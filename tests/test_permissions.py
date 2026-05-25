@@ -1,16 +1,12 @@
 # test/test_permissions.py
-# Este archivo contiene pruebas para verificar que los permisos de acceso a las rutas 
-# de la aplicación funcionan correctamente. Se prueban diferentes escenarios de 
+# Este archivo contiene pruebas para verificar que los permisos de acceso a las rutas
+# de la aplicación funcionan correctamente. Se prueban diferentes escenarios de
 # acceso para usuarios con distintos roles y permisos.
+
 
 def login(client, email, password):
     return client.post(
-        "/login",
-        data={
-            "email": email,
-            "password": password
-        },
-        follow_redirects=False
+        "/login", data={"email": email, "password": password}, follow_redirects=False
     )
 
 
@@ -36,10 +32,7 @@ def test_student_cannot_access_roles(client):
 
 
 def test_uah_user_can_access_dashboard(client):
-    client.get(
-        "/auth/saml/mock",
-        follow_redirects=False
-    )
+    client.get("/auth/saml/mock", follow_redirects=False)
 
     dashboard = client.get("/dashboard")
     assert dashboard.status_code == 200

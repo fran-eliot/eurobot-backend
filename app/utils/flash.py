@@ -2,7 +2,6 @@
 
 from fastapi import Request
 
-
 FLASH_KEY = "_flash_messages"
 
 
@@ -12,10 +11,12 @@ def add_flash(request: Request, message: str, category: str = "success"):
     """
     flashes = request.session.get(FLASH_KEY, [])
 
-    flashes.append({
-        "message": message,
-        "category": category,
-    })
+    flashes.append(
+        {
+            "message": message,
+            "category": category,
+        }
+    )
 
     request.session[FLASH_KEY] = flashes
 

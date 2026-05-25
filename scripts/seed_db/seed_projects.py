@@ -1,7 +1,7 @@
 # scripts/seed_db/seed_projects.py
 
 from datetime import UTC, datetime, timedelta
-from random import choice, uniform, randint
+from random import choice, randint, uniform
 
 from app.modules.activities.activity_model import Activity
 from app.modules.activity_feed.activity_feed_constants import FeedEvent
@@ -11,12 +11,14 @@ from app.modules.projects.project_model import Project
 from app.modules.tasks.task_model import Task, TaskPriorityEnum, TaskStatusEnum
 from app.modules.users.user_model import User
 
+
 def random_created_at(days_back: int = 30):
     return datetime.now(UTC) - timedelta(
         days=randint(0, days_back),
         hours=randint(0, 23),
         minutes=randint(0, 59),
     )
+
 
 def add_feed(db, project_id, user_id, event_type, message, entity_type, entity_id):
     db.add(
@@ -46,9 +48,15 @@ def seed_projects(db):
         return
 
     admin = db.query(User).filter_by(nombre="Admin Principal").first() or users[0]
-    profesor_garcia = db.query(User).filter_by(nombre="Profesor García").first() or users[0]
-    profesor_lopez = db.query(User).filter_by(nombre="Profesor López").first() or profesor_garcia
-    profesor_martinez = db.query(User).filter_by(nombre="Profesor Martínez").first() or profesor_garcia
+    profesor_garcia = (
+        db.query(User).filter_by(nombre="Profesor García").first() or users[0]
+    )
+    profesor_lopez = (
+        db.query(User).filter_by(nombre="Profesor López").first() or profesor_garcia
+    )
+    profesor_martinez = (
+        db.query(User).filter_by(nombre="Profesor Martínez").first() or profesor_garcia
+    )
 
     alumnos = (
         db.query(User)
@@ -223,33 +231,128 @@ def seed_projects(db):
     # =====================================================
     tasks_templates = {
         "Robot Seguidor de Línea": [
-            ("Diseñar chasis principal", "Diseño estructural del robot y soporte de sensores.", TaskStatusEnum.done, TaskPriorityEnum.high),
-            ("Montar sensores IR", "Instalación y cableado de sensores infrarrojos.", TaskStatusEnum.doing, TaskPriorityEnum.high),
-            ("Programar seguimiento de línea", "Algoritmo básico de navegación sobre circuito.", TaskStatusEnum.todo, TaskPriorityEnum.high),
-            ("Calibrar motores", "Ajuste de velocidad diferencial.", TaskStatusEnum.todo, TaskPriorityEnum.medium),
+            (
+                "Diseñar chasis principal",
+                "Diseño estructural del robot y soporte de sensores.",
+                TaskStatusEnum.done,
+                TaskPriorityEnum.high,
+            ),
+            (
+                "Montar sensores IR",
+                "Instalación y cableado de sensores infrarrojos.",
+                TaskStatusEnum.doing,
+                TaskPriorityEnum.high,
+            ),
+            (
+                "Programar seguimiento de línea",
+                "Algoritmo básico de navegación sobre circuito.",
+                TaskStatusEnum.todo,
+                TaskPriorityEnum.high,
+            ),
+            (
+                "Calibrar motores",
+                "Ajuste de velocidad diferencial.",
+                TaskStatusEnum.todo,
+                TaskPriorityEnum.medium,
+            ),
         ],
         "Brazo Robótico Inteligente": [
-            ("Montar estructura mecánica", "Montaje físico del brazo y base giratoria.", TaskStatusEnum.done, TaskPriorityEnum.medium),
-            ("Configurar servomotores", "Calibración de ángulos y límites de movimiento.", TaskStatusEnum.doing, TaskPriorityEnum.high),
-            ("Implementar control por joystick", "Interfaz de control manual.", TaskStatusEnum.todo, TaskPriorityEnum.medium),
-            ("Documentar cinemática básica", "Explicación técnica del movimiento.", TaskStatusEnum.todo, TaskPriorityEnum.low),
+            (
+                "Montar estructura mecánica",
+                "Montaje físico del brazo y base giratoria.",
+                TaskStatusEnum.done,
+                TaskPriorityEnum.medium,
+            ),
+            (
+                "Configurar servomotores",
+                "Calibración de ángulos y límites de movimiento.",
+                TaskStatusEnum.doing,
+                TaskPriorityEnum.high,
+            ),
+            (
+                "Implementar control por joystick",
+                "Interfaz de control manual.",
+                TaskStatusEnum.todo,
+                TaskPriorityEnum.medium,
+            ),
+            (
+                "Documentar cinemática básica",
+                "Explicación técnica del movimiento.",
+                TaskStatusEnum.todo,
+                TaskPriorityEnum.low,
+            ),
         ],
         "Drone Educativo Modular": [
-            ("Montar frame", "Ensamblado de estructura y brazos.", TaskStatusEnum.done, TaskPriorityEnum.high),
-            ("Probar motores", "Validar hélices, ESC y estabilidad inicial.", TaskStatusEnum.doing, TaskPriorityEnum.high),
-            ("Diseñar módulo de telemetría", "Envío de datos al panel.", TaskStatusEnum.todo, TaskPriorityEnum.medium),
-            ("Preparar protocolo de seguridad", "Normas de prueba y vuelo controlado.", TaskStatusEnum.todo, TaskPriorityEnum.high),
+            (
+                "Montar frame",
+                "Ensamblado de estructura y brazos.",
+                TaskStatusEnum.done,
+                TaskPriorityEnum.high,
+            ),
+            (
+                "Probar motores",
+                "Validar hélices, ESC y estabilidad inicial.",
+                TaskStatusEnum.doing,
+                TaskPriorityEnum.high,
+            ),
+            (
+                "Diseñar módulo de telemetría",
+                "Envío de datos al panel.",
+                TaskStatusEnum.todo,
+                TaskPriorityEnum.medium,
+            ),
+            (
+                "Preparar protocolo de seguridad",
+                "Normas de prueba y vuelo controlado.",
+                TaskStatusEnum.todo,
+                TaskPriorityEnum.high,
+            ),
         ],
         "Estación Meteorológica IoT": [
-            ("Integrar sensores ambientales", "Temperatura, humedad y presión.", TaskStatusEnum.done, TaskPriorityEnum.medium),
-            ("Crear dashboard web", "Visualización de datos históricos.", TaskStatusEnum.done, TaskPriorityEnum.medium),
-            ("Preparar informe final", "Documentación de resultados.", TaskStatusEnum.done, TaskPriorityEnum.low),
+            (
+                "Integrar sensores ambientales",
+                "Temperatura, humedad y presión.",
+                TaskStatusEnum.done,
+                TaskPriorityEnum.medium,
+            ),
+            (
+                "Crear dashboard web",
+                "Visualización de datos históricos.",
+                TaskStatusEnum.done,
+                TaskPriorityEnum.medium,
+            ),
+            (
+                "Preparar informe final",
+                "Documentación de resultados.",
+                TaskStatusEnum.done,
+                TaskPriorityEnum.low,
+            ),
         ],
         "Coche Autónomo Mini": [
-            ("Montar base mecánica", "Ruedas, chasis y soporte de sensores.", TaskStatusEnum.doing, TaskPriorityEnum.medium),
-            ("Implementar detección de obstáculos", "Sensores ultrasónicos y lógica de evasión.", TaskStatusEnum.todo, TaskPriorityEnum.high),
-            ("Controlar velocidad con PWM", "Gestión de motores DC.", TaskStatusEnum.todo, TaskPriorityEnum.medium),
-            ("Pruebas en circuito", "Validación en entorno controlado.", TaskStatusEnum.todo, TaskPriorityEnum.high),
+            (
+                "Montar base mecánica",
+                "Ruedas, chasis y soporte de sensores.",
+                TaskStatusEnum.doing,
+                TaskPriorityEnum.medium,
+            ),
+            (
+                "Implementar detección de obstáculos",
+                "Sensores ultrasónicos y lógica de evasión.",
+                TaskStatusEnum.todo,
+                TaskPriorityEnum.high,
+            ),
+            (
+                "Controlar velocidad con PWM",
+                "Gestión de motores DC.",
+                TaskStatusEnum.todo,
+                TaskPriorityEnum.medium,
+            ),
+            (
+                "Pruebas en circuito",
+                "Validación en entorno controlado.",
+                TaskStatusEnum.todo,
+                TaskPriorityEnum.high,
+            ),
         ],
     }
 
@@ -264,7 +367,9 @@ def seed_projects(db):
 
         project_users = [m.user for m in project_members if m.user] or users
 
-        for name, description, status, priority in tasks_templates.get(project.name, []):
+        for name, description, status, priority in tasks_templates.get(
+            project.name, []
+        ):
             assigned_user = choice(project_users)
 
             task = Task(
@@ -275,7 +380,8 @@ def seed_projects(db):
                 priority=priority,
                 assigned_to=assigned_user.id_usuario,
                 created_by=project.created_by or admin.id_usuario,
-                due_date=datetime.now(UTC).date() + timedelta(days=choice([7, 14, 21, 30])),
+                due_date=datetime.now(UTC).date()
+                + timedelta(days=choice([7, 14, 21, 30])),
             )
 
             db.add(task)

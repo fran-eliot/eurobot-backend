@@ -26,14 +26,9 @@ def seed_users(db, roles):
         User(nombre="Profesor Martínez", activo=True),
     ]
 
-    alumnos = [
-        User(nombre=f"Alumno {i}", activo=True)
-        for i in range(1, 21)
-    ]
+    alumnos = [User(nombre=f"Alumno {i}", activo=True) for i in range(1, 21)]
 
-    uah_users = [
-        User(nombre="Usuario UAH Demo", activo=True)
-    ]
+    uah_users = [User(nombre="Usuario UAH Demo", activo=True)]
 
     all_users = admins + profesores + alumnos + uah_users
 

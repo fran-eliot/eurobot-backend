@@ -1,31 +1,32 @@
 # app/main.py
 
-# Este es el punto de entrada principal de la aplicación. 
-# Aquí se configura FastAPI, se incluyen los routers y se monta 
+# Este es el punto de entrada principal de la aplicación.
+# Aquí se configura FastAPI, se incluyen los routers y se monta
 # el directorio de archivos estáticos.
 
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.sessions import SessionMiddleware
 
+import app.db.models  # Importar modelos para que SQLAlchemy los reconozca
+from app.core.config import settings
 from app.core.middleware.auth_middleware import AuthMiddleware
+from app.core.websockets import router as ws_router
 from app.modules.activities import activities_web
+from app.modules.activity_attachments import activity_attachments_web
 from app.modules.auth.auth_router import router as auth_router
 from app.modules.auth_saml import saml_web
 from app.modules.dashboard import dashboard_web
 from app.modules.identities import identities_web
+from app.modules.notifications import notifications_web
 from app.modules.projects import projects_web
 from app.modules.roles import roles_web
 from app.modules.tasks import tasks_web
 from app.modules.users import users_web
 from app.modules.users.user_router import router as users_router
 from app.web import auth_web
-from app.core.websockets import router as ws_router
-from app.modules.notifications import notifications_web
-from app.modules.activity_attachments import activity_attachments_web
-from starlette.middleware.sessions import SessionMiddleware
-from app.core.config import settings
-import app.db.models  # Importar modelos para que SQLAlchemy los reconozca
+
 
 def custom_openapi():
     if app.openapi_schema:
@@ -41,12 +42,13 @@ def custom_openapi():
             "type": "http",
             "scheme": "bearer",
             "bearerFormat": "JWT",
-            "description": "Introduce el token JWT obtenido en /auth/login"
+            "description": "Introduce el token JWT obtenido en /auth/login",
         }
     }
     openapi_schema["security"] = [{"BearerAuth": []}]
     app.openapi_schema = openapi_schema
     return app.openapi_schema
+
 
 app = FastAPI(
     title="Aula de Robótica EPS-UAH Backend API",
@@ -70,8 +72,8 @@ Todos los endpoints (excepto login) requieren autenticación mediante Bearer Tok
     version="1.0.0",
     contact={
         "name": "Francisco Ramírez Martín",
-        "email": "ramirez.martin.francisco@gmail.com"
-    }
+        "email": "ramirez.martin.francisco@gmail.com",
+    },
 )
 
 # Middleware de sesión PRIMERO
@@ -98,8 +100,8 @@ app.include_router(projects_web.router, tags=["Projects Web"])
 app.include_router(tasks_web.router, tags=["Tasks Web"])
 app.include_router(activities_web.router, tags=["Activities Web"])
 app.include_router(ws_router.router, tags=["WebSockets"])
-app.include_router(notifications_web.router,tags=["Notifications"])
-app.include_router(activity_attachments_web.router,tags=["Activity Attachments"])
+app.include_router(notifications_web.router, tags=["Notifications"])
+app.include_router(activity_attachments_web.router, tags=["Activity Attachments"])
 
 # Montar directorio de archivos estáticos
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
@@ -109,6 +111,3 @@ app.router.redirect_slashes = False
 
 # Personalizar esquema OpenAPI para incluir seguridad JWT
 app.openapi = custom_openapi
-
-
-

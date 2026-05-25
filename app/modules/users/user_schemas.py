@@ -18,8 +18,8 @@ class UserBase(BaseModel):
         ...,
         json_schema_extra={
             "example": "Laura García",
-            "description": "Nombre completo del usuario"
-        }
+            "description": "Nombre completo del usuario",
+        },
     )
 
     @field_validator("nombre")
@@ -43,6 +43,7 @@ class UserCreate(UserBase):
     Schema para creación de usuario.
     Actualmente solo requiere nombre.
     """
+
     pass
 
 
@@ -58,9 +59,9 @@ class UserUpdate(UserBase):
     activo: bool | None = Field(
         default=None,
         json_schema_extra={
-            "example": True,   
-            "description": "Estado del usuario (activo/inactivo)"        
-        }
+            "example": True,
+            "description": "Estado del usuario (activo/inactivo)",
+        },
     )
 
 
@@ -73,30 +74,25 @@ class UserResponse(BaseModel):
     """
 
     id_usuario: int = Field(
-        json_schema_extra={
-            "example": 1,
-            "description": "ID único del usuario"
-        }
+        json_schema_extra={"example": 1, "description": "ID único del usuario"}
     )
 
     nombre: str = Field(
         json_schema_extra={
             "example": "Laura García",
-            "description": "Nombre completo del usuario"
+            "description": "Nombre completo del usuario",
         }
     )
 
     activo: bool = Field(
         json_schema_extra={
             "example": True,
-            "description": "Estado del usuario (activo/inactivo)"
+            "description": "Estado del usuario (activo/inactivo)",
         }
     )
 
     fecha_creacion: datetime = Field(
-        json_schema_extra={
-            "example": "2024-01-01T00:00:00Z"
-        }
+        json_schema_extra={"example": "2024-01-01T00:00:00Z"}
     )
 
     model_config = ConfigDict(from_attributes=True)

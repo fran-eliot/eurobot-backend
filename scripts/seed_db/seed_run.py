@@ -4,14 +4,13 @@ from app.db.session import SessionLocal
 
 # Importante si no lo haces ya en main/reset:
 # asegura que los modelos estén registrados en Base.metadata
-# import app.db.models 
-
+# import app.db.models
 from scripts.seed_db.seed_audit import seed_audit
 from scripts.seed_db.seed_identities import seed_identities
+from scripts.seed_db.seed_notifications import seed_notifications
+from scripts.seed_db.seed_projects import seed_projects
 from scripts.seed_db.seed_roles import seed_roles
 from scripts.seed_db.seed_users import seed_users
-from scripts.seed_db.seed_projects import seed_projects
-from scripts.seed_db.seed_notifications import seed_notifications
 
 
 def run():

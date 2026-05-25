@@ -1,6 +1,6 @@
 # tests/test_roles_crud.py
-# Este archivo contiene pruebas para las operaciones CRUD de roles a través de la 
-# interfaz web. 
+# Este archivo contiene pruebas para las operaciones CRUD de roles a través de la
+# interfaz web.
 from tests.test_utils import login_admin
 
 
@@ -17,11 +17,8 @@ def test_create_role(client):
 
     response = client.post(
         "/roles/form",
-        data={
-            "nombre": "tester",
-            "descripcion": "Rol de pruebas"
-        },
-        follow_redirects=False
+        data={"nombre": "tester", "descripcion": "Rol de pruebas"},
+        follow_redirects=False,
     )
 
     assert response.status_code in (302, 303)
@@ -34,11 +31,8 @@ def test_edit_role(client):
     # Crear rol primero
     create = client.post(
         "/roles/form",
-        data={
-            "nombre": "temporal",
-            "descripcion": "Temporal"
-        },
-        follow_redirects=False
+        data={"nombre": "temporal", "descripcion": "Temporal"},
+        follow_redirects=False,
     )
 
     assert create.status_code in (302, 303)
@@ -51,11 +45,8 @@ def test_edit_role(client):
     # Editamos un ID probable reciente (ajustable si hiciera falta)
     response = client.post(
         "/roles/2/edit",
-        data={
-            "nombre": "temporal_editado",
-            "descripcion": "Editado"
-        },
-        follow_redirects=False
+        data={"nombre": "temporal_editado", "descripcion": "Editado"},
+        follow_redirects=False,
     )
 
     assert response.status_code in (302, 303)
@@ -67,17 +58,11 @@ def test_delete_role(client):
     # Crear rol
     client.post(
         "/roles/form",
-        data={
-            "nombre": "eliminar_role",
-            "descripcion": "Borrar"
-        },
-        follow_redirects=False
+        data={"nombre": "eliminar_role", "descripcion": "Borrar"},
+        follow_redirects=False,
     )
 
     # Intentar borrar uno reciente
-    response = client.post(
-        "/roles/2/delete",
-        follow_redirects=False
-    )
+    response = client.post("/roles/2/delete", follow_redirects=False)
 
     assert response.status_code in (302, 303)

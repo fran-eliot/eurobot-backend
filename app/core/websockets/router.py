@@ -1,33 +1,34 @@
 # app/core/websockets/router.py
 
-# 📋 Router de WebSockets: define el endpoint para las conexiones WebSocket 
+# 📋 Router de WebSockets: define el endpoint para las conexiones WebSocket
 # relacionadas con los proyectos. Este router se encarga de manejar las conexiones
-# entrantes, verificar la autenticidad del usuario a través de JWT, y gestionar la 
-# suscripción a las salas de proyectos para enviar notificaciones en tiempo real a 
-# los usuarios cuando ocurren eventos importantes, como la creación o actualización 
-# de tareas. 
+# entrantes, verificar la autenticidad del usuario a través de JWT, y gestionar la
+# suscripción a las salas de proyectos para enviar notificaciones en tiempo real a
+# los usuarios cuando ocurren eventos importantes, como la creación o actualización
+# de tareas.
 
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect
 from sqlalchemy.orm import Session
+
+from app.core.authorization.project_permissions import user_in_project
 from app.core.websockets.manager import manager
 from app.core.websockets.ws_auth import get_current_user_ws
 from app.db.session import get_db
 from app.modules.projects.project_model import Project
-from app.core.authorization.project_permissions import user_in_project
 
 router = APIRouter(prefix="/ws", tags=["WebSockets"])
+
 
 # =========================================================
 # 🔔 WEBSOCKET
 # =========================================================
 @router.websocket("/projects/{project_id}")
 async def websocket_endpoint(
-    websocket: WebSocket, 
-    project_id: int,
-    db: Session = Depends(get_db)):
+    websocket: WebSocket, project_id: int, db: Session = Depends(get_db)
+):
 
     # ⚠️ recuperar usuario desde cookie JWT
-    user = await get_current_user_ws(websocket,db)
+    user = await get_current_user_ws(websocket, db)
 
     project = db.query(Project).get(project_id)
 
