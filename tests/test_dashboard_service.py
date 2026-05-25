@@ -17,7 +17,6 @@ from app.modules.projects.project_model import Project
 from app.modules.tasks.task_model import Task, TaskStatusEnum
 from app.modules.users.user_model import User
 
-
 # =====================================================
 # HELPERS
 # =====================================================

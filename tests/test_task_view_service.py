@@ -14,7 +14,6 @@ from app.modules.tasks.task_view_service import (
 )
 from app.modules.users.user_model import User
 
-
 # =====================================================
 # HELPERS
 # =====================================================

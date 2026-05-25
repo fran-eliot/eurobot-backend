@@ -1,7 +1,6 @@
 # tests/test_notification_service.py
 
 from app.modules.notifications.notification_constants import NotificationType
-from app.modules.notifications.notification_model import Notification
 from app.modules.notifications.notification_service import (
     count_unread_notifications,
     create_notification,
