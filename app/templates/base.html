@@ -11,10 +11,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- AdminLTE CSS -->
-    <link rel="stylesheet" href="/static/adminlte/css/adminlte.min.css">
+    <link rel="stylesheet" href="/static/vendor/adminlte/css/adminlte.min.css">
 
     <!-- FontAwesome -->
-    <link rel="stylesheet" href="/static/adminlte/plugins/fontawesome-free/css/all.min.css">
+    <link rel="stylesheet" href="/static/vendor/adminlte/plugins/fontawesome-free/css/all.min.css">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/static/css/app.css">
@@ -336,11 +336,13 @@
 <div id="toast-container"></div>
 
 <!-- ===================== JS ===================== -->
-<script src="/static/adminlte/plugins/jquery/jquery.min.js"></script>
-<script src="/static/adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<script src="/static/adminlte/js/adminlte.min.js"></script>
+<script src="{{ url_for('static', path='vendor/adminlte/plugins/jquery/jquery.min.js') }}"></script>
+<script src="{{ url_for('static', path='vendor/adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', path='vendor/adminlte/js/adminlte.min.js') }}"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="{{ url_for('static', path='vendor/chartjs/chart.umd.js') }}"></script>
+<script src="{{ url_for('static', path='vendor/sweetalert2/sweetalert2.all.min.js') }}"></script>
 <script src="{{ url_for('static', path='js/core/toasts.js') }}"></script>
 <script src="{{ url_for('static', path='js/core/dialog.js') }}"></script>
 <script src="{{ url_for('static', path='js/core/confirmations.js') }}"></script>

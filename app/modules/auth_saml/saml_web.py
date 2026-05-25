@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse, Response
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.security import create_access_token
 from app.db.session import get_db
 from app.modules.auth.auth_service import build_auth_payload
@@ -38,7 +39,14 @@ def mock_login(db: Session = Depends(get_db)):
 
     response = RedirectResponse("/dashboard", status_code=302)
 
-    response.set_cookie("access_token", token, httponly=True, samesite="lax")
+    is_secure_env = not settings.DEBUG
+
+    response.set_cookie(
+        "access_token", 
+        token, 
+        httponly=True, 
+        samesite="lax",
+        secure=is_secure_env)
 
     return response
 
@@ -101,6 +109,13 @@ def acs(request: Request, db: Session = Depends(get_db)):
 
     response = RedirectResponse("/dashboard", status_code=302)
 
-    response.set_cookie("access_token", token, httponly=True, samesite="lax")
+    is_secure_env = not settings.DEBUG
+
+    response.set_cookie(
+        "access_token", 
+        token, 
+        httponly=True, 
+        samesite="lax",
+        secure=is_secure_env)
 
     return response
