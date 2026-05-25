@@ -86,7 +86,7 @@
         </div>
 
         <div class="col-md-6 mb-3">
-            <label>Tarea</label>
+            <label for="task_id">Tarea</label>
 
             <select name="task_id" class="form-control" required>
                 {% if not tasks %}
@@ -116,9 +116,9 @@
         </div>
 
         <div class="col-md-6 mb-3">
-            <label>Usuario</label>
+            <label for="user_id">Usuario</label>
 
-            <select name="user_id" class="form-control">
+            <select name="user_id" class="form-control" id="user_id">
                 <option value="">Sin asignar</option>
 
                 {% for user in users %}

@@ -180,11 +180,12 @@
             <div class="row">
 
                 <div class="col-md-8 mb-3">
-                    <label>Archivo</label>
+                    <label for="fileUpload">Archivo</label>
 
                     <input type="file"
                            name="file"
                            class="form-control"
+                           id="fileUpload"
                            required>
 
                     <small class="form-text text-muted">
@@ -200,13 +201,14 @@
                 </div>
 
                 <div class="col-12">
-                    <label>Descripción del adjunto</label>
+                    <label for="description">Descripción del adjunto</label>
 
                     <input type="text"
                            name="description"
                            class="form-control"
                            maxlength="255"
-                           placeholder="Ej: Evidencia del montaje del brazo robótico">
+                           placeholder="Ej: Evidencia del montaje del brazo robótico"
+                           id="description">
                 </div>
 
             </div>

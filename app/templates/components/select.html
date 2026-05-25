@@ -1,7 +1,7 @@
 {% macro select(name, label, options, selected=None) %}
 <div class="form-group">
-    <label>{{ label }}</label>
-    <select name="{{ name }}" class="form-control">
+    <label for="{{ name }}">{{ label }}</label>
+    <select name="{{ name }}" class="form-control" id="{{ name }}">
 
         {% for value, text in options %}
         <option value="{{ value }}"

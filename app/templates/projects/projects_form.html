@@ -51,7 +51,7 @@
                         <!-- 📝 NOMBRE -->
                         <!-- ===================================================== -->
                         <div class="form-group">
-                            <label>Nombre *</label>
+                            <label for="name">Nombre *</label>
 
                             <input
                                 type="text"
@@ -78,11 +78,12 @@
                         <!-- 📝 DESCRIPCIÓN -->
                         <!-- ===================================================== -->
                         <div class="form-group">
-                            <label>Descripción</label>
+                            <label for="description">Descripción</label>
 
                             <textarea
                                 name="description"
                                 class="form-control"
+                                id="description"
                                 rows="4"
                                 placeholder="Describe el objetivo del proyecto..."
                             >{{
@@ -98,11 +99,12 @@
                         <!-- ===================================================== -->
                         {% if project %}
                         <div class="form-group">
-                            <label>Estado</label>
+                            <label for="status">Estado</label>
 
                             <select
                                 name="status"
                                 class="form-control {% if errors and errors.get('status') %}is-invalid{% endif %}"
+                                id="status"
                             >
                                 {% set current_status =
                                     (form_data.status if form_data and form_data.status)
@@ -136,20 +138,22 @@
                         <!-- ===================================================== -->
                         {% if project %}
                         <div class="form-group">
-                            <label>Creado por</label>
+                            <label for="created_by">Creado por</label>
                             <input
                                 type="text"
                                 class="form-control"
+                                id="created_by"
                                 value="{{ project.created_by }}"
                                 disabled
                             >
                         </div>
 
                         <div class="form-group">
-                            <label>Fecha de creación</label>
+                            <label for="created_at">Fecha de creación</label>
                             <input
                                 type="text"
                                 class="form-control"
+                                id="created_at"
                                 value="{{ project.created_at }}"
                                 disabled
                             >

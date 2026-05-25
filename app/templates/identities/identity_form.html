@@ -53,12 +53,12 @@
     <!-- USUARIO -->
     <div class="mt-4">
 
-        <label class="font-weight-bold">
+        <label for="user_id" class="font-weight-bold">
             <i class="fas fa-user"></i>
             Usuario asociado
         </label>
 
-        <select name="user_id" class="form-control mt-2">
+        <select name="user_id" class="form-control mt-2" id="user_id">
 
             {% for u in users %}
             <option value="{{ u.id_usuario }}"

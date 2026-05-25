@@ -36,14 +36,14 @@ def dashboard(
     """
 
     logger.info("Entrando al dashboard con usuario: %s", current_user.nombre)
-    # Inyectamos db en el scope para acceso global en templates
-    request.scope["db"] = db
+    # Inyectamos db en el request para que esté disponible en templates si es necesario
+    request.state.db = db
 
     # =========================================================
     # 📊 OBTENER MÉTRICAS
     # =========================================================
     metrics = get_dashboard_metrics(db, current_user)
-    print(metrics)  # Debug: imprimir métricas obtenidas
+
 
     roles = [r.nombre.lower() for r in getattr(current_user, "roles", [])]
 
