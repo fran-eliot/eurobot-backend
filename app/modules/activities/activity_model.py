@@ -34,7 +34,7 @@ class Activity(Base):
 
     time_spent = Column(Float, default=0)
 
-    created_at = Column(DateTime, default=datetime.now(UTC), nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
 
     # Relaciones
     task = relationship("Task", back_populates="activities")

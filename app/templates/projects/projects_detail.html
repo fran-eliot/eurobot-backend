@@ -238,6 +238,15 @@
             {% if project.tasks %}
             <div class="table-responsive">
                 <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Tarea</th>
+                            <th>Estado</th>
+                            <th>Prioridad</th>
+                            <th>Asignado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         {% for task in project.tasks %}
                             {{ task_row(task) }}

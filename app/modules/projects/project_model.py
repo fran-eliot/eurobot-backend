@@ -29,7 +29,7 @@ class Project(Base):
 
     created_by = Column(Integer, ForeignKey("usuarios.id_usuario"), nullable=True)
 
-    created_at = Column(DateTime, default=datetime.now(UTC), nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
 
     # Relaciones
     tasks = relationship("Task", back_populates="project", cascade="all, delete-orphan")

@@ -52,7 +52,7 @@ class Task(Base):
 
     due_date = Column(Date, nullable=True)
 
-    created_at = Column(DateTime, default=datetime.now(UTC), nullable=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(UTC), nullable=False)
 
     # Relaciones
     project = relationship("Project", back_populates="tasks")

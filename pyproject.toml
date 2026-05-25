@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 
 dependencies = [
+    "aiofiles>=25.1.0",
     "bcrypt==4.0.1",
     "email-validator>=2.3.0",
     "fastapi>=0.133.0",

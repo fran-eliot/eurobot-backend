@@ -1,5 +1,6 @@
 # app/modules/activity_attachments/activity_attachments_web.py
 
+import aiofiles
 from pathlib import Path
 from uuid import uuid4
 
@@ -70,8 +71,8 @@ async def upload_attachment(
             detail="El archivo supera el tamaño máximo permitido",
         )
 
-    with open(file_path, "wb") as buffer:
-        buffer.write(content)
+    async with aiofiles.open(file_path, "wb") as buffer:
+        await buffer.write(content)
 
     attachment = ActivityAttachment(
         activity_id=activity.id_activity,
