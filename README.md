@@ -1,279 +1,705 @@
-# Aula Robótica Platform
+# 🤖 Aula Robótica Platform
 
-Backend de gestión de identidades, autenticación y control de acceso para el **Aula de Robótica de la Escuela Politécnica Superior (Universidad de Alcalá)**.
+![Python](https://img.shields.io/badge/python-3.13-blue)
+![FastAPI](https://img.shields.io/badge/FastAPI-backend-success)
+![Coverage](https://img.shields.io/badge/coverage-75%25-brightgreen)
+![Tests](https://github.com/fran-eliot/aula-robotica-platform/actions/workflows/tests.yml/badge.svg)
 
-El sistema proporciona una infraestructura robusta de autenticación, autorización y administración de usuarios para las distintas actividades del Aula de Robótica, incluyendo el soporte a la competición **Eurobot Spain**.
+Plataforma web modular desarrollada para la gestión colaborativa del **Aula de Robótica de la Escuela Politécnica Superior de la Universidad de Alcalá (UAH)**.
 
-Este proyecto forma parte del **Proyecto Final del CFGS en Desarrollo de Aplicaciones Multiplataforma (DAM)**.
+El proyecto integra:
+
+* gestión de usuarios e identidades,
+* autenticación y autorización avanzada,
+* control de acceso RBAC contextual,
+* gestión colaborativa de proyectos,
+* tareas Kanban realtime,
+* auditoría,
+* notificaciones,
+* dashboard administrativo,
+* arquitectura preparada para SAML/SSO institucional.
+
+Desarrollado como **Proyecto Final del CFGS DAM (Desarrollo de Aplicaciones Multiplataforma)** con enfoque profesional en:
+
+* arquitectura backend,
+* seguridad,
+* testing,
+* realtime,
+* calidad software,
+* mantenibilidad,
+* escalabilidad.
 
 ---
 
-# Objetivos del proyecto
+# 📚 Tabla de contenidos
 
-Desarrollar una plataforma backend que permita:
-
-- gestión centralizada de usuarios
-- autenticación segura basada en JWT
-- control de acceso mediante roles y permisos
-- administración desde panel web
-- trazabilidad completa mediante auditoría
+* Visión general
+* Características principales
+* Arquitectura del sistema
+* Stack tecnológico
+* Funcionalidades
+* Sistema IAM y seguridad
+* Realtime y WebSockets
+* Calidad software
+* Testing y cobertura
+* Estructura del proyecto
+* Modelo de datos
+* Instalación y ejecución
+* Docker y despliegue
+* API y documentación
+* Roadmap futuro
+* Documentación adicional
+* Autor
 
 ---
 
-# Tecnologías utilizadas
+# 🚀 Visión general
+
+Aula Robótica Platform no es únicamente un CRUD administrativo.
+
+El sistema ha sido diseñado como una plataforma extensible para soportar:
+
+* operaciones internas del Aula de Robótica,
+* coordinación de proyectos,
+* trabajo colaborativo,
+* gestión académica,
+* seguimiento de actividades,
+* competiciones como Eurobot Spain,
+* integración futura con sistemas institucionales.
+
+La aplicación sigue una arquitectura modular orientada a separar claramente:
+
+* presentación,
+* lógica de negocio,
+* persistencia,
+* seguridad,
+* realtime.
+
+---
+
+# ✨ Características principales
+
+## 🔐 Seguridad e IAM
+
+* Autenticación JWT
+* Cookies HTTPOnly
+* RBAC contextual
+* Roles globales y contextuales
+* Sistema granular de permisos
+* Middleware de autenticación
+* Protección SSR y API
+* Auditoría completa
+* Arquitectura preparada para SAML/SSO
+
+## 📊 Dashboard administrativo
+
+* Métricas globales
+* Feed de actividad
+* Logs recientes
+* Estadísticas de proyectos
+* Estado de tareas
+* Métricas contextuales por usuario
+
+## 👥 Gestión de usuarios
+
+* CRUD completo
+* Activación/desactivación
+* Roles y permisos efectivos
+* Visualización contextual
+* Auditoría integrada
+
+## 🔑 Gestión de identidades
+
+* Identidades desacopladas del usuario
+* Soporte multi-provider
+* Arquitectura preparada para OAuth/SAML
+* Asociación flexible usuario-identidad
+
+## 📁 Gestión de proyectos
+
+* Creación y edición
+* Miembros y coordinadores
+* Gestión colaborativa
+* Feed de actividad
+* Métricas por proyecto
+
+## ✅ Gestión de tareas
+
+* Kanban realtime
+* Prioridades
+* Estados
+* Asignaciones
+* Auditoría de cambios
+* Actualización sincronizada mediante WebSockets
+
+## 🔔 Notificaciones
+
+* Sistema realtime
+* Notificaciones contextuales
+* Marcado de lectura
+* Integración con tareas y proyectos
+
+## 🧾 Auditoría
+
+Registro centralizado de:
+
+* login/logout,
+* acciones CRUD,
+* cambios críticos,
+* operaciones de seguridad,
+* actividad del sistema.
+
+---
+
+# 🏗️ Arquitectura del sistema
+
+El proyecto utiliza una arquitectura modular multicapa.
+
+```text
+┌──────────────────────────────┐
+│        Frontend SSR          │
+│ Jinja2 + AdminLTE + Bootstrap│
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│         FastAPI Routers      │
+│ SSR + API REST + WebSockets  │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│        Service Layer         │
+│ Business Logic / IAM / RBAC  │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│     SQLAlchemy ORM Layer     │
+└──────────────┬───────────────┘
+               │
+               ▼
+┌──────────────────────────────┐
+│         MariaDB DB           │
+└──────────────────────────────┘
+```
+
+## Arquitectura híbrida
+
+La aplicación combina:
+
+* SSR tradicional mediante Jinja2,
+* API REST,
+* comunicación realtime mediante WebSockets.
+
+Esto permite:
+
+* rapidez de desarrollo,
+* buena experiencia de usuario,
+* simplicidad operativa,
+* realtime sin SPA compleja.
+
+---
+
+# 🧱 Stack tecnológico
 
 ## Backend
 
--   Python
--   FastAPI
--   SQLAlchemy ORM
--   MariaDB
+* Python 3.13
+* FastAPI
+* SQLAlchemy ORM
+* MariaDB
+* Uvicorn
+
+## Frontend
+
+* Jinja2
+* AdminLTE
+* Bootstrap
+* Chart.js
+* SweetAlert2
 
 ## Seguridad
 
-- JWT (JSON Web Token)
-- bcrypt (hash de contraseñas)
-- RBAC (Role-Based Access Control)
-- Sistema de permisos granulares
+* JWT
+* Cookies HTTPOnly
+* bcrypt
+* RBAC contextual
+* Middleware de autenticación
 
-## Frontend administrativo
+## Realtime
 
--   Jinja2
--   AdminLTE
--   Bootstrap
+* WebSockets
+* Broadcast de eventos
+* Sincronización Kanban
+
+## Calidad software
+
+* Pytest
+* Ruff
+* SonarQube Cloud
+* GitHub Actions
+* Coverage
 
 ## Infraestructura
 
--   Uvicorn
--   entorno virtual con `uv`
+* Docker
+* uv
+* GitHub
+* CI/CD
 
 ---
 
-# Funcionalidades principales
+# ⚙️ Funcionalidades
+
+# 1. Sistema IAM
+
+El sistema implementa un modelo IAM completo basado en:
+
+* usuarios,
+* identidades,
+* roles,
+* permisos,
+* ownership,
+* contexto de proyecto.
+
+## Roles principales
+
+* Administrador
+* Profesor
+* Coordinador
+* Estudiante
+
+## Control de acceso
+
+El acceso se valida tanto:
+
+* en backend,
+* como en frontend SSR.
+
+Esto incluye:
+
+* menús dinámicos,
+* botones condicionales,
+* validación de acciones,
+* ownership,
+* permisos efectivos.
+
+---
+
+# 2. Dashboard
+
+El dashboard muestra información diferente según el usuario.
+
+## Administradores
+
+* usuarios,
+* roles,
+* identidades,
+* actividad reciente,
+* auditoría,
+* estadísticas globales.
+
+## Usuarios contextuales
+
+* proyectos asignados,
+* tareas,
+* progreso,
+* feed de actividad,
+* notificaciones.
+
+---
+
+# 3. Gestión de proyectos
+
+Cada proyecto puede incluir:
+
+* miembros,
+* coordinadores,
+* tareas,
+* actividades,
+* notificaciones,
+* feed de actividad.
+
+## Características
+
+* roles contextuales,
+* colaboración,
+* seguimiento,
+* realtime.
+
+---
+
+# 4. Sistema Kanban
+
+El sistema Kanban soporta:
+
+* drag & drop,
+* realtime,
+* sincronización automática,
+* persistencia inmediata.
+
+## Estados
+
+* To Do
+* Doing
+* Done
+
+## Flujo realtime
+
+```text
+Cliente A
+   │
+   ▼
+Drag & Drop
+   │
+   ▼
+Backend valida permisos
+   │
+   ▼
+DB Update
+   │
+   ▼
+Broadcast WebSocket
+   │
+   ▼
+Clientes sincronizados
+```
+
+---
+
+# 🔐 Sistema de seguridad
 
 ## Autenticación
 
-- login con email y contraseña
-- emisión de JWT con roles embebidos
-- almacenamiento del token en cookie HTTPOnly
+La autenticación utiliza:
 
-## Autorización
+* JWT Access Token,
+* Refresh Token,
+* Cookies HTTPOnly.
 
-Sistema híbrido:
+## Ventajas
 
-### Roles
-- admin
-- profesor
-- estudiante
+* protección frente a XSS,
+* integración sencilla SSR,
+* separación frontend/backend.
 
-### Permisos
-- create_user
-- delete_user
-- update_user
-- view_dashboard
-- manage_roles
-- manage_identities
+---
 
-## Gestión de usuarios
+## RBAC contextual
 
--   creación de usuarios
--   activación / desactivación
--   eliminación
--   visualización de perfiles
+La autorización combina:
 
-## Gestión de identidades
+* roles globales,
+* roles contextuales,
+* permisos granulares.
 
-Una identidad representa una credencial de acceso:
-
--   email
--   contraseña
--   proveedor de autenticación
--   asociación con usuario
--   rol contextual
-
-## Gestión de roles
-
-Sistema RBAC con roles configurables.
-
-Roles actuales:
-
--   administrador
--   profesor
--   estudiante
-
-## Panel administrativo
-
-Interfaz web con AdminLTE para:
-
--   gestión de usuarios
--   gestión de identidades
--   gestión de roles
--   visualización de métricas
+```text
+Usuario
+   │
+   ▼
+Rol Global
+   │
+   ▼
+Proyecto
+   │
+   ▼
+Rol Contextual
+   │
+   ▼
+Permisos efectivos
+```
 
 ---
 
 ## Auditoría
 
-Registro de eventos de seguridad:
+Todas las acciones relevantes quedan registradas:
 
--   login
--   logout
--   creación de usuarios
--   modificación de identidades
--   eliminación de recursos
-
-Cada registro almacena:
-
-- usuario
-- acción
-- recurso
-- IP
-- user agent
-- timestamp
+* usuario,
+* acción,
+* recurso,
+* IP,
+* timestamp,
+* user-agent.
 
 ---
 
-# Arquitectura del sistema
+# ⚡ Realtime y WebSockets
 
-El sistema sigue una arquitectura modular en capas.
+La plataforma incorpora comunicación realtime para:
 
-    Presentation Layer
-            │
-            ▼
-    Web Controllers (FastAPI routers)
-            │
-            ▼
-    Service Layer
-            │
-            ▼
-    Persistence Layer (SQLAlchemy)
-            │
-            ▼
-    Database (MariaDB)
+* Kanban,
+* notificaciones,
+* sincronización de actividad.
 
-    ![Arquitectura](docs/diagramas/architecture_backend.png)
+## Características
+
+* salas por proyecto,
+* broadcast selectivo,
+* sincronización automática,
+* arquitectura desacoplada.
 
 ---
 
-# Modelo de datos
+# 🧪 Calidad software
 
-Entidades principales:
+El proyecto incorpora una estrategia real de calidad software.
 
--   usuarios
--   identidades
--   roles
--   audit_logs
+## Herramientas
 
-Relaciones principales:
-
-    Usuario 1 ─── N Identidades
-    Usuario N ─── N Roles
-    Usuario 1 ─── N AuditLogs
-
----
-
-# Decisiones de diseño
-
-## Uso de JWT + cookies
-Se decidió usar JWT almacenado en cookies HTTPOnly para:
-- evitar almacenamiento en localStorage
-- mejorar seguridad frente a XSS
-- mantener compatibilidad con frontend server-side
-
-## Roles en el token
-Los roles se incluyen en el JWT para:
-- evitar consultas a base de datos en cada request
-- mejorar rendimiento
-
-## Separación roles / permisos
-Se implementa un sistema híbrido:
-- roles → nivel alto
-- permisos → control granular
-
-Esto permite:
-- escalabilidad futura
-- desacoplar lógica de negocio
-
-## Auditoría centralizada
-Todas las acciones pasan por un servicio común:
-- consistencia
-- trazabilidad
-- facilidad de extensión
+| Herramienta     | Uso              |
+| --------------- | ---------------- |
+| Ruff            | Linting          |
+| Pytest          | Testing          |
+| Coverage        | Cobertura        |
+| SonarQube Cloud | Calidad estática |
+| GitHub Actions  | CI/CD            |
 
 ---
 
-# Trade-offs
+# 🧪 Testing y cobertura
 
-## JWT sin invalidación central
-Ventaja:
-- rendimiento alto
+Actualmente el proyecto dispone de:
 
-Desventaja:
-- no se puede invalidar fácilmente sin blacklist
+* más de 240 tests automatizados,
+* cobertura superior al 75%,
+* testing de servicios críticos,
+* integración automática CI/CD.
 
-## Roles en token vs base de datos
-Ventaja:
-- rapidez
+## Tests cubiertos
 
-Desventaja:
-- cambios de roles requieren nuevo login
+* services,
+* autenticación,
+* permisos,
+* dashboard,
+* proyectos,
+* tareas,
+* notificaciones,
+* activity feed.
 
-## Permisos en código (no en DB)
-Ventaja:
-- simplicidad inicial
+## Ejecutar tests
 
-Desventaja:
-- menor flexibilidad futura
+```bash
+uv run pytest
+```
 
-## Uso de Jinja en lugar de SPA
-Ventaja:
-- simplicidad
-- rapidez de desarrollo
+## Coverage
 
-Desventaja:
-- menor interactividad
-
----
-
-# Posibles extensiones futuras
-
-El sistema está preparado para integrar módulos adicionales:
-
--   gestión de proyectos
--   gestión de equipos
--   resultados y métricas
--   autenticación OAuth
+```bash
+uv run pytest --cov=app --cov-report=html
+```
 
 ---
 
-# Ejecución del proyecto
+# 📁 Estructura del proyecto
 
-Clonar repositorio:
-
-    git clone https://github.com/fran-eliot/aula-robotica-platform
-
-Instalar dependencias:
-
-    uv sync
-
-Ejecutar servidor:
-
-    uvicorn app.main:app --reload
-
-Servidor disponible en:
-
-    http://127.0.0.1:8000
+```text
+app/
+├── core/
+│   ├── security/
+│   ├── middleware/
+│   ├── permissions/
+│   └── utils/
+│
+├── db/
+│   └── session/
+│
+├── modules/
+│   ├── auth/
+│   ├── users/
+│   ├── roles/
+│   ├── identities/
+│   ├── projects/
+│   ├── tasks/
+│   ├── notifications/
+│   ├── dashboard/
+│   ├── websocket/
+│   └── audit/
+│
+├── static/
+├── templates/
+└── main.py
+```
 
 ---
 
-# Autor
+# 🧩 Modelo de datos
 
-Francisco Ramírez Martín
+## Entidades principales
 
-Backend Developer · Data Engineer en formación
+* Users
+* Identities
+* Roles
+* Permissions
+* Projects
+* Tasks
+* Activities
+* Notifications
+* AuditLogs
 
-LinkedIn\
-https://linkedin.com/in/franeliot
+## Relaciones principales
 
-GitHub\
-https://github.com/fran-eliot
+```text
+User 1 ─── N Identities
+User N ─── N Roles
+Project 1 ─── N Tasks
+Project N ─── N Members
+User 1 ─── N AuditLogs
+```
+
+---
+
+# 🚀 Instalación y ejecución
+
+## Clonar repositorio
+
+```bash
+git clone https://github.com/fran-eliot/aula-robotica-platform
+cd aula-robotica-platform
+```
+
+## Instalar dependencias
+
+```bash
+uv sync
+```
+
+## Configurar variables de entorno
+
+Crear:
+
+```text
+.env
+```
+
+## Ejecutar aplicación
+
+```bash
+uv run uvicorn app.main:app --reload
+```
+
+Aplicación disponible en:
+
+```text
+http://127.0.0.1:8000
+```
+
+---
+
+# 🐳 Docker y despliegue
+
+El proyecto está preparado para despliegue mediante Docker.
+
+## Objetivos del despliegue
+
+* portabilidad,
+* reproducibilidad,
+* aislamiento,
+* facilidad de instalación.
+
+---
+
+# 📘 API y documentación
+
+## Swagger UI
+
+```text
+/api/docs
+```
+
+## ReDoc
+
+```text
+/api/redoc
+```
+
+La documentación OpenAPI incluye:
+
+* endpoints,
+* modelos,
+* autenticación,
+* respuestas,
+* validaciones.
+
+---
+
+# 🛣️ Roadmap futuro
+
+## Integraciones
+
+* SAML/SSO UAH
+* OAuth2
+* proveedores externos
+
+## Plataforma
+
+* SPA complementaria
+* métricas avanzadas
+* analytics
+* mobile support
+* realtime avanzado
+
+## Infraestructura
+
+* despliegue cloud,
+* Docker Compose,
+* Kubernetes,
+* escalado horizontal.
+
+---
+
+# 📚 Documentación adicional
+
+El proyecto incluye documentación técnica extensa en:
+
+```text
+docs/
+```
+
+Incluyendo:
+
+* arquitectura,
+* seguridad,
+* módulos,
+* decisiones arquitectónicas,
+* despliegue,
+* testing,
+* evolución del proyecto,
+* integración SAML.
+
+---
+
+# 👨‍💻 Autor
+
+## Francisco “Fran” Ramírez Martín
+
+Backend Developer · Full Stack · Data & AI Enthusiast
+
+### Formación
+
+* CFGS DAM
+* Ingeniería Informática (UNED)
+* Bootcamp Full Stack
+* Bootcamp Data Analytics
+
+### Tecnologías principales
+
+* Python
+* FastAPI
+* Java
+* Spring Boot
+* SQL
+* Angular
+* Docker
+* AWS
+
+### Contacto
+
+🔗 LinkedIn
+
+[https://linkedin.com/in/franeliot](https://linkedin.com/in/franeliot)
+
+💻 GitHub
+
+[https://github.com/fran-eliot](https://github.com/fran-eliot)
