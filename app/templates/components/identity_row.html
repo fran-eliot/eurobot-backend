@@ -2,19 +2,20 @@
 
 {% macro identity_row(identity) %}
 
-<tr onclick="window.location='/identities/{{ identity.id }}'"
-    class="row-clickable">
+<tr class="row-clickable">
 
     <!-- EMAIL -->
     <td class="align-middle">
-        <strong>{{ identity.email }}</strong>
+        <a href="/identities/{{ identity.id }}"
+           class="font-weight-bold text-dark text-decoration-none">
+            {{ identity.email }}
+        </a>
     </td>
 
     <!-- USUARIO -->
     <td class="align-middle">
         {% if identity.usuario %}
-            <a href="/users/{{ identity.usuario.id_usuario }}"
-               onclick="event.stopPropagation();">
+            <a href="/users/{{ identity.usuario.id_usuario }}">
                 {{ identity.usuario.nombre }}
             </a>
         {% else %}
@@ -24,7 +25,6 @@
 
     <!-- PROVIDER -->
     <td class="align-middle text-center">
-
         {% set provider = identity.provider or "local" %}
 
         {% set color = {
@@ -37,15 +37,11 @@
         <span class="badge badge-{{ color }}">
             {{ provider }}
         </span>
-
     </td>
 
     <!-- ACCIONES -->
-    <td class="align-middle text-center text-nowrap"
-        onclick="event.stopPropagation();">
-
+     <td class="align-middle text-center text-nowrap">
         {{ identity_actions(identity) }}
-
     </td>
 
 </tr>

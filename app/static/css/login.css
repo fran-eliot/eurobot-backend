@@ -64,8 +64,14 @@ body.login-page{
     border-color:#0d6efd;
 }
 
-.login-eye{
-    cursor:pointer;
+.login-eye {
+    background: transparent;
+    cursor: pointer;
+}
+
+.login-eye:focus {
+    outline: none;
+    box-shadow: none;
 }
 
 /* BUTTONS */

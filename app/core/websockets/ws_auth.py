@@ -10,7 +10,7 @@ from app.core.security import validate_access_token
 from app.modules.users.user_model import User
 
 
-async def get_current_user_ws(websocket: WebSocket, db: Session):
+def get_current_user_ws(websocket: WebSocket, db: Session):
     token = websocket.cookies.get("access_token")
 
     if not token:

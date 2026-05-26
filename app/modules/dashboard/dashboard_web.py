@@ -12,6 +12,7 @@ from app.core.templates import templates
 from app.db.session import get_db
 from app.modules.auth.auth_dependencies_web import require_permission_web
 from app.modules.dashboard.dashboard_service import get_dashboard_metrics
+from app.modules.users.user_model import User
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,9 @@ router = APIRouter()
 def dashboard(
     request: Request,
     db: Session = Depends(get_db),
-    current_user=Depends(require_permission_web(Resources.DASHBOARD, Actions.READ)),
+    current_user: User = Depends(
+        require_permission_web(Resources.DASHBOARD, Actions.READ)
+    )
 ):
     """
     Vista principal del dashboard.
@@ -35,7 +38,8 @@ def dashboard(
     - Actividad reciente (audit logs)
     """
 
-    logger.info("Entrando al dashboard con usuario: %s", current_user.nombre)
+    safe_username = str(current_user.nombre).replace("\n", "").replace("\r", "")
+    logger.info("Entrando al dashboard con usuario: %s", safe_username)
     # Inyectamos db en el request para que esté disponible en templates si es necesario
     request.state.db = db
 

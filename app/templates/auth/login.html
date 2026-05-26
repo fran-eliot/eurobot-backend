@@ -5,8 +5,8 @@
 <title>Login | Aula Robótica</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<link rel="stylesheet" href="/static/adminlte/css/adminlte.min.css">
-<link rel="stylesheet" href="/static/adminlte/plugins/fontawesome-free/css/all.min.css">
+<link rel="stylesheet" href="/static/vendor/adminlte/css/adminlte.min.css">
+<link rel="stylesheet" href="/static/vendor/adminlte/plugins/fontawesome-free/css/all.min.css">
 
 <!-- Favicon -->
 <link rel="icon" type="image/x-icon" href="/static/icons/favicon.ico">
@@ -62,10 +62,14 @@
                            required>
 
                     <div class="input-group-append">
-                        <div class="input-group-text login-eye"
-                             onclick="togglePassword()">
+                        <button
+                            type="button"
+                            class="input-group-text login-eye border-0"
+                            onclick="togglePassword()"
+                            aria-label="Mostrar u ocultar contraseña"
+                        >
                             <span id="eyeIcon" class="fas fa-eye"></span>
-                        </div>
+                        </button>
                     </div>
                 </div>
 
@@ -94,8 +98,8 @@
 
 </div>
 
-<script src="/static/adminlte/plugins/jquery/jquery.min.js"></script>
-<script src="/static/adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/static/vendor/adminlte/plugins/jquery/jquery.min.js"></script>
+<script src="/static/vendor/adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 
 <script>
 function togglePassword() {

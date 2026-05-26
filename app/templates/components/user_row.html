@@ -3,8 +3,7 @@
 
 {% macro user_row(user) %}
 
-<tr class="user-row"
-    onclick="window.location='/users/{{ user.id_usuario }}'">
+<tr class="user-row">
 
     <!-- ID -->
     <td class="align-middle text-muted text-center user-id">
@@ -13,8 +12,8 @@
 
     <!-- USUARIO -->
     <td class="align-middle">
-
-        <div class="d-flex align-items-center">
+        <a href="/users/{{ user.id_usuario }}"
+           class="d-flex align-items-center text-dark text-decoration-none">
 
             <div class="user-avatar mr-3">
                 <i class="fas fa-user"></i>
@@ -30,9 +29,8 @@
                 </small>
             </div>
 
-        </div>
-
-    </td>
+        </a>
+    </td>8
 
     <!-- ESTADO -->
     <td class="align-middle text-center">
@@ -40,8 +38,7 @@
     </td>
 
     <!-- ACCIONES -->
-    <td class="align-middle text-center text-nowrap"
-        onclick="event.stopPropagation();">
+    <td class="align-middle text-center text-nowrap">
 
         {{ user_actions(user) }}
 
