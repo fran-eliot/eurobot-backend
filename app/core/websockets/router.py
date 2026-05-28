@@ -71,7 +71,7 @@ async def notifications_websocket_endpoint(
     websocket: WebSocket,
     db: Session = Depends(get_db),
 ):
-    user = await get_current_user_ws(websocket, db)
+    user = get_current_user_ws(websocket, db)
 
     if not user:
         await websocket.close(code=1008)
