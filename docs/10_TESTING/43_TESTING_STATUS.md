@@ -497,3 +497,33 @@ La plataforma posee actualmente una infraestructura de testing **muy superior a 
 
 > **El siguiente gran salto evolutivo será:**  
 > `testing realtime distribuido` + `automatización frontend E2E`
+
+## Estado final de testing y calidad
+
+Durante las fases finales del proyecto se reforzó significativamente la estrategia de calidad software.
+
+Se integraron:
+
+- Pytest
+- pytest-cov
+- Ruff
+- GitHub Actions
+- SonarCloud
+
+La cobertura global alcanzó aproximadamente un 75%, incorporando pruebas sobre:
+
+- proyectos,
+- tareas,
+- activity feed,
+- dashboard,
+- notificaciones,
+- autorización,
+- middleware,
+- y servicios críticos.
+
+Además, el pipeline CI/CD automatiza:
+
+- linting,
+- testing,
+- generación de cobertura,
+- y análisis SonarCloud.

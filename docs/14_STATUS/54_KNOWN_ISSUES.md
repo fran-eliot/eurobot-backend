@@ -435,3 +435,10 @@ Ahora son problemas de:
 * realtime consistency,
 * frontend architecture,
 * evolución enterprise.
+
+## Issues pendientes conocidos
+
+- Integración SAML pendiente de coordinación con servicios informáticos UAH.
+- Despliegue Docker planificado pero no finalizado.
+- Coverage gate SonarCloud limitado por restricciones del plan gratuito.
+- Persistencia definitiva de entorno productivo pendiente de despliegue VPS.

@@ -452,3 +452,14 @@ La plataforma ya soporta **despliegue SSR enterprise moderno**, incluyendo:
 > `distributed realtime architecture` + `cloud-native deployment`
 
 
+## Estrategia de despliegue prevista
+
+Como evolución futura inmediata se plantea el despliegue mediante:
+
+- VPS Linux (Hetzner),
+- Docker Compose,
+- MariaDB persistente,
+- Nginx reverse proxy,
+- y HTTPS mediante Certbot.
+
+La arquitectura actual ya ha sido diseñada teniendo en cuenta este escenario.

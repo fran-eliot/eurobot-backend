@@ -591,6 +591,8 @@ Si dudas dónde poner algo:
 El código debe ser: **legible, predecible, seguro, modular, testeable, reusable** y estar **preparado para crecer**.
 
 
+## Calidad y análisis estático
 
+El proyecto utiliza Ruff y SonarCloud para mantener consistencia, detectar code smells y reforzar buenas prácticas de desarrollo backend y SSR.
   
 

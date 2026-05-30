@@ -540,3 +540,15 @@ La siguiente gran evolución será:
 ```text
 containerized continuous delivery platform
 ```
+
+## Estado final de integración continua
+
+El pipeline CI/CD final ejecuta automáticamente:
+
+1. instalación de dependencias,
+2. validación Ruff,
+3. ejecución de tests,
+4. generación de cobertura,
+5. análisis SonarCloud.
+
+El workflow se ejecuta mediante GitHub Actions utilizando Python 3.13 y entorno uv.

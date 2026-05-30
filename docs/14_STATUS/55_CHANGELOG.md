@@ -294,3 +294,15 @@ El sistema actualmente es:
 
 # 🎯 Conclusión
 El proyecto ya **NO es un CRUD administrativo simple**. Ahora es una **plataforma SSR enterprise con arquitectura realtime avanzada y un frontend reusable moderno**.
+
+## Sprint final — Calidad software y estabilización
+
+- Refactorización de templates para accesibilidad.
+- Mejora de SSR y cookies JWT.
+- Integración Ruff.
+- Integración SonarCloud.
+- Refuerzo testing automatizado.
+- Incremento cobertura ~75%.
+- Integración GitHub Actions.
+- Hardening frontend y librerías vendor locales.
+- Revisión final documentación técnica.
